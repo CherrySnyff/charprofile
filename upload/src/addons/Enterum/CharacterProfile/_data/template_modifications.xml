@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_modifications>
+  <modification type="public" template="member_view" modification_key="enterum_cp_tabs_member_view" description="Character profile tabs on member_view" execution_order="10" enabled="1" action="str_replace">
+    <find><![CDATA[<span class="hScroller-scroll">]]></find>
+    <replace><![CDATA[<span class="hScroller-scroll">
+					<xf:include template="enterum_char_profile_tab_links" />]]></replace>
+  </modification>
+  <modification type="public" template="member_about" modification_key="enterum_cp_tabs_member_about" description="Character profile tabs on member_about" execution_order="10" enabled="1" action="str_replace">
+    <find><![CDATA[<span class="hScroller-scroll">]]></find>
+    <replace><![CDATA[<span class="hScroller-scroll">
+					<xf:include template="enterum_char_profile_tab_links" />]]></replace>
+  </modification>
+  <modification type="public" template="member_recent_content" modification_key="enterum_cp_tabs_member_recent" description="Character profile tabs on member_recent_content" execution_order="10" enabled="1" action="str_replace">
+    <find><![CDATA[<span class="hScroller-scroll">]]></find>
+    <replace><![CDATA[<span class="hScroller-scroll">
+					<xf:include template="enterum_char_profile_tab_links" />]]></replace>
+  </modification>
+  <modification type="public" template="member_trophies" modification_key="enterum_cp_tabs_member_trophies" description="Character profile tabs on member_trophies" execution_order="10" enabled="1" action="str_replace">
+    <find><![CDATA[<span class="hScroller-scroll">]]></find>
+    <replace><![CDATA[<span class="hScroller-scroll">
+					<xf:include template="enterum_char_profile_tab_links" />]]></replace>
+  </modification>
+</template_modifications>

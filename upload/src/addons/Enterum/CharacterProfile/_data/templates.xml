@@ -1,0 +1,1843 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+  <template type="public" title="enterum_char_profile_tab_links" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:if is="$user.canViewCharacterProfileTabs()">
+	<a href="{{ link('members/reputation', $user) }}" class="tabs-tab{{ $cpCharProfileTab == 'reputation' ? ' is-active' : '' }}" rel="nofollow">{{ phrase('enterum_char_profile_tab_reputation') }}</a>
+	<a href="{{ link('members/backpack', $user) }}" class="tabs-tab{{ $cpCharProfileTab == 'backpack' ? ' is-active' : '' }}" rel="nofollow">{{ phrase('enterum_char_profile_tab_backpack') }}</a>
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_tabs" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:if is="$user.canViewCharacterProfileTabs()">
+	<h2 class="tabs tabs--standalone cp-tabs">
+		<a href="{{ link('members', $user) }}" class="tabs-tab">{{ phrase('enterum_char_profile_back_to_profile') }}</a>
+		<a href="{{ link('members/reputation', $user) }}" class="tabs-tab{{ $tab == 'reputation' ? ' is-active' : '' }}">{{ phrase('enterum_char_profile_tab_reputation') }}</a>
+		<a href="{{ link('members/backpack', $user) }}" class="tabs-tab{{ $tab == 'backpack' ? ' is-active' : '' }}">{{ phrase('enterum_char_profile_tab_backpack') }}</a>
+	</h2>
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_reputation" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
+
+<xf:css src="enterum_char_profile.less" />
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body">
+			<xf:include template="enterum_char_profile_tabs" />
+
+			<div class="cp-hero" id="hero">
+				<div class="cp-heroHeader">
+					<strong>Актуальное количество Очков Героизма:</strong>
+					<span class="cp-heroDots">
+						<xf:foreach loop="range(1, 3)" value="$i">
+							<i class="fa-{{ $i <= $profile.hero_points_cache ? 'solid' : 'regular' }} fa-circle cp-heroDot cp-heroDot--{{ $i <= $profile.hero_points_cache ? 'filled' : 'empty' }}"></i>
+						</xf:foreach>
+					</span>
+				</div>
+				<hr class="cp-heroDivider" />
+
+				<details class="cp-heroSpoiler">
+					<summary>Получение Очков Героизма</summary>
+					<xf:set var="$heroRoot">{{ link('members/reputation_hero', $user) }}</xf:set>
+					<xf:if is="$canManageHero">
+						<xf:form action="{$heroRoot}add" class="cp-heroAddRow">
+							<div class="cp-heroAddFields">
+								<div class="cp-heroField"><label>Дата</label><input type="text" name="event_date" class="input" value="{$heroToday}" placeholder="дд.мм.гггг" /></div>
+								<div class="cp-heroField"><label>Получено/Потрачено</label>
+									<select name="operation_type" class="input">
+										<option value="gain">Получено ОГ</option>
+										<option value="loss">Потрачено ОГ</option>
+									</select>
+								</div>
+								<div class="cp-heroField cp-heroField--short"><label>К-во ОГ</label><input type="number" name="amount" class="input" min="1" max="3" step="1" /></div>
+								<div class="cp-heroField"><label>Ссылка</label><input type="url" name="source_url" class="input" placeholder="https://..." /></div>
+								<div class="cp-heroField"><label>Название ссылки</label><input type="text" name="source_title" class="input" /></div>
+								<xf:if is="$canManageHeroSupport">
+									<div class="cp-heroField cp-heroField--support"><label><input type="checkbox" name="is_support" value="1" /> Поддержка</label></div>
+								</xf:if>
+								<div class="cp-heroField cp-heroField--submit"><label>&nbsp;</label><button type="submit" class="button button--primary" title="Сохранить"><xf:fa icon="save" /></button></div>
+							</div>
+						</xf:form>
+					</xf:if>
+
+					<div class="cp-heroLogGrid">
+					<xf:if is="$heroPairs is not empty">
+						<xf:foreach loop="$heroPairs" value="$pair">
+							<div class="cp-heroLogRow">
+								<xf:foreach loop="$pair" value="$entry">
+									<div class="cp-heroLogCell">
+										<div class="{$entry.cssClass}">
+											<div class="cp-heroLogLine">
+												<span class="cp-heroLogText">{$entry.labelHtml|raw}</span>
+												<xf:if is="$canManageHero">
+													<details class="cp-heroLogEdit">
+														<summary title="Редактировать"><xf:fa icon="edit" /></summary>
+														<xf:form action="{$heroRoot}{$entry.hero_log_id}/edit" class="cp-heroLogEditForm">
+															<div class="cp-heroAddFields">
+																<div class="cp-heroField"><label>Дата</label><input type="text" name="event_date" class="input" value="{$entry.event_date_value}" /></div>
+																<div class="cp-heroField"><label>Тип</label>
+																	<select name="operation_type" class="input">
+																		<option value="gain"<xf:if is="$entry.operation_type == 'gain' && !$entry.is_support"> selected="selected"</xf:if>>Получено ОГ</option>
+																		<option value="loss"<xf:if is="$entry.operation_type == 'loss'"> selected="selected"</xf:if>>Потрачено ОГ</option>
+																	</select>
+																</div>
+																<div class="cp-heroField cp-heroField--short"><label>К-во</label><input type="number" name="amount" class="input" value="{$entry.amount}" min="1" max="3" /></div>
+																<div class="cp-heroField"><label>Ссылка</label><input type="url" name="source_url" class="input" value="{$entry.source_url}" /></div>
+																<div class="cp-heroField"><label>Название</label><input type="text" name="source_title" class="input" value="{$entry.source_title}" /></div>
+																<xf:if is="$canManageHeroSupport">
+																	<div class="cp-heroField"><label><input type="checkbox" name="is_support" value="1"<xf:if is="$entry.is_support"> checked="checked"</xf:if> /> Поддержка</label></div>
+																</xf:if>
+																<div class="cp-heroField cp-heroField--submit"><button type="submit" class="button button--primary"><xf:fa icon="save" /></button></div>
+															</div>
+														</xf:form>
+													</details>
+													<xf:form action="{$heroRoot}{$entry.hero_log_id}/delete" class="cp-heroDeleteForm">
+														<button type="submit" class="button button--link cp-heroDeleteBtn" title="Удалить"><xf:fa icon="fa-solid fa-eraser" /></button>
+													</xf:form>
+												</xf:if>
+											</div>
+										</div>
+									</div>
+								</xf:foreach>
+							</div>
+						</xf:foreach>
+					<xf:else />
+						<p class="cp-placeholder">Записей о начислении Очков Героизма пока нет.</p>
+					</xf:if>
+				</div>
+
+					<xf:if is="$heroTotal > $heroPerPage">
+						<xf:pagenav page="{$heroPage}" perpage="{$heroPerPage}" total="{$heroTotal}"
+							link="members/reputation" data="{$user}" params="{{ {'#': 'hero'} }}" wrapperclass="block-outer block-outer--after" />
+					</xf:if>
+				</details>
+			</div>
+
+			<h2 class="cp-sectionTitle">Репутация</h2>
+
+			<div class="cp-reputation cp-pageSection" id="reputation">
+				<div class="cp-table-wrap cp-table-wrap--rep-summary">
+					<table class="cp-table cp-table--rep-summary">
+						<tr><th>Биом</th><th>Отрицательная</th><th>Положительная</th><th>Общая</th></tr>
+						<xf:foreach loop="$influenceRows" key="$k" value="$ir">
+							<tr>
+								<td>{$ir.label}</td>
+								<td class="cp-rep-negative">{$ir.negative|number}</td>
+								<td>{$ir.positive|number}</td>
+								<td>{$ir.total|number}</td>
+							</tr>
+						</xf:foreach>
+					</table>
+				</div>
+
+				<div class="cp-rep-tabs cp-rep-tabs--{$repRegion}">
+					<a href="{{ link('members/reputation', $user, {'rep': 'aramidis'}) }}" class="cp-rep-tab cp-rep-tab--aramidis<xf:if is="$repRegion == 'aramidis'"> is-active</xf:if>">АРАМИДИС</a>
+					<a href="{{ link('members/reputation', $user, {'rep': 'korzus'}) }}" class="cp-rep-tab cp-rep-tab--korzus<xf:if is="$repRegion == 'korzus'"> is-active</xf:if>">КОРЗУС</a>
+					<a href="{{ link('members/reputation', $user, {'rep': 'union'}) }}" class="cp-rep-tab cp-rep-tab--union<xf:if is="$repRegion == 'union'"> is-active</xf:if>">ЮНИОН</a>
+				</div>
+
+				<div class="cp-rep-dynamic">
+					<xf:set var="$repRoot">{{ link('members/reputation_log', $user) }}</xf:set>
+					<h4 class="block-textHeader">Репутация фракций региона</h4>
+
+					<div class="cp-rep-faction-list">
+						<xf:if is="$factionRows is not empty">
+							<xf:foreach loop="$factionRows" value="$fr">
+								<details class="cp-rep-faction-spoiler">
+									<summary>
+										<span class="cp-rep-faction-name">{$fr.display_name}</span>
+										<span class="cp-rep-faction-total">{$fr.total|number}</span>
+										<span class="cp-rep-faction-relation"><span class="cp-relation-pill cp-relation-pill--{$fr.relation_class}" data-cp-tooltip="{$fr.relation_tooltip}">{$fr.relation}</span></span>
+									</summary>
+									<div class="cp-rep-faction-items">
+										<xf:if is="$fr.entries is not empty">
+											<xf:foreach loop="$fr.entries" value="$row">
+												<div class="cp-rep-entry">
+													<div class="cp-rep-entryLine">
+														<span class="cp-rep-entryText">
+															<strong class="cp-rep-entryFaction">{$row.faction_name}</strong>
+															<span class="cp-rep-entryAmount<xf:if is="$row.amount < 0"> cp-rep-entryAmount--negative</xf:if>">{$row.amount|number} очков репутации</span>
+															<a href="{$row.source_url}" target="_blank" rel="noopener" class="cp-rep-entryLink">{$row.source_title}</a>
+														</span>
+														<xf:if is="$canManageReputation">
+															<span class="cp-rep-entryActions">
+																<details class="cp-rep-entryEdit">
+																	<summary title="Редактировать" aria-label="Редактировать"><xf:fa icon="edit" /></summary>
+																	<xf:form action="{$repRoot}{$row.reputation_log_id}/edit" class="cp-rep-editForm">
+																		<input type="hidden" name="rep" value="{$repRegion}" />
+																		<div class="cp-rep-addFields">
+																			<select name="region_key" class="input cp-rep-addField cp-rep-addField--biome">
+																				<option value="aramidis"<xf:if is="$row.region_key == 'aramidis'"> selected="selected"</xf:if>>Арамидис</option>
+																				<option value="korzus"<xf:if is="$row.region_key == 'korzus'"> selected="selected"</xf:if>>Корзус</option>
+																				<option value="union"<xf:if is="$row.region_key == 'union'"> selected="selected"</xf:if>>Юнион</option>
+																			</select>
+																			<input type="text" name="faction_name" value="{$row.faction_name}" class="input cp-rep-addField" placeholder="Фракция" />
+																			<input type="number" name="reputation_amount" value="{$row.amount}" class="input cp-rep-addField cp-rep-addField--qty" placeholder="К-во" />
+																			<input type="url" name="source_url" value="{$row.source_url}" class="input cp-rep-addField cp-rep-addField--url" placeholder="Ссылка" />
+																			<input type="text" name="source_title" value="{$row.source_title}" class="input cp-rep-addField cp-rep-addField--url" placeholder="Название ссылки" />
+																			<button type="submit" class="button button--primary cp-rep-saveBtn" title="Сохранить" aria-label="Сохранить"><xf:fa icon="save" /></button>
+																		</div>
+																	</xf:form>
+																</details>
+																<xf:form action="{$repRoot}{$row.reputation_log_id}/delete" class="cp-rep-deleteForm">
+																	<input type="hidden" name="rep" value="{$repRegion}" />
+																	<button type="submit" class="button button--link cp-icon-btn" title="Удалить" aria-label="Удалить"><xf:fa icon="fa-solid fa-eraser" /></button>
+																</xf:form>
+															</span>
+														</xf:if>
+													</div>
+												</div>
+											</xf:foreach>
+										<xf:else />
+											<p class="cp-empty">Записей по этой фракции пока нет.</p>
+										</xf:if>
+									</div>
+								</details>
+							</xf:foreach>
+						<xf:else />
+							<p class="cp-empty">Нет данных по фракциям.</p>
+						</xf:if>
+					</div>
+
+					<xf:if is="$canManageReputation">
+						<xf:form action="{$repRoot}add" class="cp-rep-addForm">
+							<div class="cp-rep-addFields">
+								<select name="region_key" class="input cp-rep-addField cp-rep-addField--biome">
+									<option value="aramidis"<xf:if is="$repRegion == 'aramidis'"> selected="selected"</xf:if>>Арамидис</option>
+									<option value="korzus"<xf:if is="$repRegion == 'korzus'"> selected="selected"</xf:if>>Корзус</option>
+									<option value="union"<xf:if is="$repRegion == 'union'"> selected="selected"</xf:if>>Юнион</option>
+								</select>
+								<input type="text" name="faction_name" class="input cp-rep-addField" placeholder="Фракция" />
+								<input type="number" name="reputation_amount" class="input cp-rep-addField cp-rep-addField--qty" placeholder="К-во" />
+								<input type="url" name="source_url" class="input cp-rep-addField cp-rep-addField--url" placeholder="Ссылка" />
+								<input type="text" name="source_title" class="input cp-rep-addField cp-rep-addField--url" placeholder="Название ссылки" />
+								<button type="submit" class="button button--primary cp-rep-saveBtn" title="Сохранить" aria-label="Сохранить"><xf:fa icon="save" /></button>
+							</div>
+						</xf:form>
+					</xf:if>
+				</div>
+			</div>
+
+			<script>
+			(function () {
+				var tabsWrap = document.querySelector('.cp-rep-tabs');
+				if (!tabsWrap) return;
+
+				tabsWrap.addEventListener('click', function (e) {
+					var link = e.target && e.target.closest ? e.target.closest('a.cp-rep-tab') : null;
+					if (!link) return;
+
+					e.preventDefault();
+					var href = link.getAttribute('href');
+					if (!href) return;
+
+					fetch(href, {
+						credentials: 'same-origin',
+						headers: { 'X-Requested-With': 'XMLHttpRequest' }
+					}).then(function (r) {
+						return r.text();
+					}).then(function (html) {
+						var parser = new DOMParser();
+						var doc = parser.parseFromString(html, 'text/html');
+						var nextTabs = doc.querySelector('.cp-rep-tabs');
+						var nextDynamic = doc.querySelector('.cp-rep-dynamic');
+						if (!nextTabs || !nextDynamic) {
+							window.location.href = href;
+							return;
+						}
+
+						tabsWrap.className = nextTabs.className;
+						var dynamic = document.querySelector('.cp-rep-dynamic');
+						if (dynamic) {
+							dynamic.outerHTML = nextDynamic.outerHTML;
+						}
+						if (window.history && window.history.replaceState) {
+							window.history.replaceState({}, '', href);
+						}
+					}).catch(function () {
+						window.location.href = href;
+					});
+				});
+			})();
+			</script>
+
+			<script>
+			(function () {
+				if (window.__cpRepTooltipInit) return;
+				window.__cpRepTooltipInit = true;
+				var tooltipEl = null;
+				var activeTrigger = null;
+
+				function ensureTooltip() {
+					if (tooltipEl) return tooltipEl;
+					tooltipEl = document.createElement('div');
+					tooltipEl.className = 'cp-relation-tooltip';
+					tooltipEl.style.display = 'none';
+					document.body.appendChild(tooltipEl);
+					return tooltipEl;
+				}
+
+				function positionTooltip(evt) {
+					if (!tooltipEl || tooltipEl.style.display === 'none') return;
+					var w = 300;
+					var left = evt.clientX - (w / 2);
+					if (left < 8) left = 8;
+					if (left > (window.innerWidth - w - 8)) left = window.innerWidth - w - 8;
+					var top = evt.clientY - tooltipEl.offsetHeight - 12;
+					if (top < 8) top = evt.clientY + 14;
+					tooltipEl.style.left = left + 'px';
+					tooltipEl.style.top = top + 'px';
+				}
+
+				document.addEventListener('mouseover', function (evt) {
+					var trigger = evt.target && evt.target.closest
+						? evt.target.closest('.cp-relation-pill[data-cp-tooltip]')
+						: null;
+					if (!trigger) return;
+					activeTrigger = trigger;
+					var tip = ensureTooltip();
+					tip.textContent = trigger.getAttribute('data-cp-tooltip') || '';
+					tip.style.display = 'block';
+					positionTooltip(evt);
+				});
+
+				document.addEventListener('mousemove', function (evt) {
+					if (!activeTrigger) return;
+					positionTooltip(evt);
+				});
+
+				document.addEventListener('mouseout', function (evt) {
+					if (!activeTrigger) return;
+					var related = evt.relatedTarget;
+					if (related && activeTrigger.contains(related)) return;
+					activeTrigger = null;
+					if (tooltipEl) tooltipEl.style.display = 'none';
+				});
+			})();
+			</script>
+		</div>
+	</div>
+</div>]]></template>
+
+  <template type="public" title="enterum_char_profile_backpack" version_id="1000072" version_string="1.0.2"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_backpack') }} - {$user.username}</xf:title>
+
+<xf:css src="enterum_char_profile.less" />
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body">
+			<xf:include template="enterum_char_profile_tabs" />
+
+			<h2 class="tabs tabs--standalone cp-subTabs">
+				<a href="{{ link('members/backpack', $user, {'sub': 'activity'}) }}#activity" class="tabs-tab{{ $subTab == 'activity' ? ' is-active' : '' }}">Предметы за активности</a>
+				<a href="{{ link('members/backpack', $user, {'sub': 'crafted'}) }}#crafted" class="tabs-tab{{ $subTab == 'crafted' ? ' is-active' : '' }}">Созданные предметы</a>
+				<a href="{{ link('members/backpack', $user, {'sub': 'other'}) }}#other" class="tabs-tab{{ $subTab == 'other' ? ' is-active' : '' }}">Прочее</a>
+			</h2>
+
+			<div class="cp-backpack cp-backpack--activity cp-pageSection" id="activity"<xf:if is="$subTab != 'activity'"> style="display:none"</xf:if>>
+				<div class="cp-table-wrap cp-table-wrap--backpack cp-backpack-block">
+					<table class="cp-table cp-backpackTable cp-backpackTable--grid cp-backpackTable--activity">
+						<thead>
+							<tr>
+								<th class="cp-col-name">Название предмета</th>
+								<th class="cp-col-type">Тип предмета</th>
+								<th class="cp-col-level">Ур</th>
+								<th class="cp-col-rarity">Редкость</th>
+								<th class="cp-col-reason">Причина</th>
+							</tr>
+						</thead>
+						<tbody>
+						<xf:if is="$activityRows is not empty">
+							<xf:foreach loop="$activityRows" value="$row">
+								<tr>
+									<td class="cp-col-name">
+										<i class="fa-solid fa-box cp-bp-rowIcon" aria-hidden="true"></i>
+										<xf:if is="$row.item_url is not empty">
+											<a href="{$row.item_url}" target="_blank" rel="noopener">{$row.item_name}</a>
+										<xf:else />
+											{$row.item_name}
+										</xf:if>
+									</td>
+									<td class="cp-col-type">
+										{$row.item_type}
+										<xf:if is="$row.item_description is not empty">
+											<details class="cp-itemDesc"><summary>Описание</summary><div>{$row.item_description}</div></details>
+										</xf:if>
+									</td>
+									<td class="cp-col-level">{$row.item_level|number}</td>
+									<td class="cp-col-rarity">
+										<span class="cp-itemQuality cp-itemQuality--{$row.rarity_key}">
+											<xf:if is="$row.rarity_key == 'common'">ОБЫЧНЫЙ</xf:if>
+											<xf:if is="$row.rarity_key == 'uncommon'">НЕОБЫЧНЫЙ</xf:if>
+											<xf:if is="$row.rarity_key == 'rare'">РЕДКИЙ</xf:if>
+											<xf:if is="$row.rarity_key == 'unique'">УНИКАЛЬНЫЙ</xf:if>
+										</span>
+									</td>
+									<td class="cp-col-reason">
+										<div class="cp-reasonCell">
+											<span class="cp-reasonCell-text">
+												<xf:if is="$row.source_url is not empty && $row.reason_text is not empty">
+													<a href="{$row.source_url}" target="_blank" rel="noopener">{$row.reason_text}</a>
+												<xf:elseif is="$row.reason_text is not empty" />
+													{$row.reason_text}
+												</xf:if>
+											</span>
+											<xf:if is="$canManageBackpack">
+												<span class="cp-reasonCell-actions">
+													<details class="cp-reasonEdit">
+														<summary title="Редактировать" aria-label="Редактировать"><xf:fa icon="edit" /></summary>
+														<xf:form action="{$activityRoot}{$row.activity_item_id}/edit" class="cp-add-row cp-add-row--activity-edit">
+															<div class="cp-add-fields">
+																<input type="text" name="item_name" value="{$row.item_name}" class="input" placeholder="Название предмета" />
+																<input type="url" name="item_url" value="{$row.item_url}" class="input" placeholder="Ссылка на предмет" />
+																<input type="text" name="item_type" value="{$row.item_type}" class="input" placeholder="Тип предмета" />
+																<input type="number" name="item_level" value="{$row.item_level}" class="input cp-bp-input--level" min="0" placeholder="Ур" />
+																<select name="rarity_key" class="input">
+																	<option value="common"<xf:if is="$row.rarity_key == 'common'"> selected="selected"</xf:if>>Обычный</option>
+																	<option value="uncommon"<xf:if is="$row.rarity_key == 'uncommon'"> selected="selected"</xf:if>>Необычный</option>
+																	<option value="rare"<xf:if is="$row.rarity_key == 'rare'"> selected="selected"</xf:if>>Редкий</option>
+																	<option value="unique"<xf:if is="$row.rarity_key == 'unique'"> selected="selected"</xf:if>>Уникальный</option>
+																</select>
+																<input type="text" name="reason" value="{$row.reason}" class="input" placeholder="Причина: Квест/БМ..." />
+																<input type="url" name="source_url" value="{$row.source_url}" class="input" placeholder="Ссылка на причину" />
+																<input type="text" name="source_title" value="{$row.source_title}" class="input" placeholder="Название ссылки" />
+																<input type="text" name="item_description" value="{$row.item_description}" class="input" placeholder="Описание" />
+																<button type="submit" class="button button--primary cp-bp-saveBtn" title="Сохранить" aria-label="Сохранить"><xf:fa icon="save" /></button>
+															</div>
+														</xf:form>
+													</details>
+													<xf:form action="{$activityRoot}{$row.activity_item_id}/delete" class="cp-reasonDeleteForm">
+														<button type="submit" class="button button--link cp-icon-btn" title="Удалить" aria-label="Удалить"><xf:fa icon="fa-solid fa-eraser" /></button>
+													</xf:form>
+												</span>
+											</xf:if>
+										</div>
+									</td>
+								</tr>
+							</xf:foreach>
+						<xf:else />
+							<tr><td colspan="5" class="cp-empty">{{ phrase('enterum_char_profile_bp_empty_activity') }}</td></tr>
+						</xf:if>
+						</tbody>
+					</table>
+				</div>
+
+				<xf:if is="$activityTotal > $activityPerPage">
+					<xf:pagenav page="{$activityPage}" perpage="{$activityPerPage}" total="{$activityTotal}"
+						link="members/backpack" data="{$user}" params="{{ {'sub': 'activity', '#': 'activity'} }}" wrapperclass="block-outer block-outer--after cp-backpack-block" />
+				</xf:if>
+
+				<xf:if is="$canManageBackpack">
+					<xf:form action="{$activityRoot}add" class="cp-add-row cp-backpack-block">
+						<div class="cp-add-fields cp-add-fields--activity">
+							<input type="text" name="item_name" class="input cp-bp-addField cp-bp-addField--name" placeholder="Название предмета" />
+							<input type="url" name="item_url" class="input cp-bp-addField cp-bp-addField--url" placeholder="Ссылка на предмет" />
+							<input type="text" name="item_type" class="input cp-bp-addField cp-bp-addField--type" placeholder="Тип предмета" />
+							<input type="number" name="item_level" class="input cp-bp-addField cp-bp-addField--level" min="0" placeholder="Ур" />
+							<select name="rarity_key" class="input cp-bp-addField cp-bp-addField--rarity">
+								<option value="" disabled="disabled" selected="selected">Редкость</option>
+								<option value="common">Обычный</option>
+								<option value="uncommon">Необычный</option>
+								<option value="rare">Редкий</option>
+								<option value="unique">Уникальный</option>
+							</select>
+							<input type="text" name="reason" class="input cp-bp-addField cp-bp-addField--reason" placeholder="Причина: Квест/БМ..." />
+							<input type="url" name="source_url" class="input cp-bp-addField cp-bp-addField--source" placeholder="Ссылка на причину" />
+							<button type="submit" class="cp-btn-plus" title="Добавить" aria-label="Добавить">+</button>
+						</div>
+					</xf:form>
+				</xf:if>
+			</div>
+
+			<div class="cp-backpack cp-backpack--crafted cp-pageSection" id="crafted"<xf:if is="$subTab != 'crafted'"> style="display:none"</xf:if>>
+				<div class="cp-table-wrap cp-table-wrap--backpack cp-backpack-block">
+					<table class="cp-table cp-backpackTable cp-backpackTable--grid cp-backpackTable--crafted">
+						<thead>
+							<tr>
+								<th class="cp-col-name">Название предмета</th>
+								<th class="cp-col-type">Тип предмета</th>
+								<th class="cp-col-level">Ур</th>
+								<th class="cp-col-request">Ссылка</th>
+								<th class="cp-col-author">Автор</th>
+								<xf:if is="$canManageBackpack"><th class="cp-col-actions"></th></xf:if>
+							</tr>
+						</thead>
+						<tbody>
+						<xf:if is="$craftedRows is not empty">
+							<xf:foreach loop="$craftedRows" value="$row">
+								<tr>
+									<td class="cp-col-name">
+										<i class="fa-solid fa-screwdriver-wrench cp-bp-rowIcon" aria-hidden="true"></i>
+										<a href="{$row.item_url}" target="_blank" rel="noopener">{$row.item_name}</a>
+									</td>
+									<td class="cp-col-type">{$row.item_type}</td>
+									<td class="cp-col-level">{$row.item_level|number}</td>
+									<td class="cp-col-request">
+										<a href="{$row.request_url}" target="_blank" rel="noopener">{{ phrase('enterum_char_profile_bp_request_link') }}</a>
+									</td>
+									<td class="cp-col-author">
+										<xf:if is="$row.author_user">
+											<xf:username user="{$row.author_user}" rich="true" />
+										<xf:else />
+											<strong>{$row.author_display}</strong>
+										</xf:if>
+									</td>
+									<xf:if is="$canManageBackpack">
+										<td class="cp-col-actions">
+											<span class="cp-rowActions">
+												<details class="cp-rowEdit">
+													<summary title="Редактировать" aria-label="Редактировать"><xf:fa icon="edit" /></summary>
+													<xf:form action="{$craftedRoot}{$row.crafted_item_id}/edit" class="cp-add-row cp-add-row--inline-edit">
+														<div class="cp-add-fields cp-add-fields--crafted-edit">
+															<input type="text" name="item_name" value="{$row.item_name}" class="input" placeholder="Название предмета" />
+															<input type="url" name="item_url" value="{$row.item_url}" class="input" placeholder="Ссылка на предмет" />
+															<input type="text" name="item_type" value="{$row.item_type}" class="input" placeholder="Тип предмета" />
+															<input type="number" name="item_level" value="{$row.item_level}" class="input cp-bp-addField--level" min="0" placeholder="Ур" />
+															<input type="url" name="request_url" value="{$row.request_url}" class="input" placeholder="Ссылка на заявку" />
+															<div class="cp-author-search" data-find-url="{$findUsersUrl}">
+																<input type="text" name="author_name" value="{$row.author_name}" class="input cp-author-input" autocomplete="off" placeholder="@ник" />
+																<div class="cp-suggest cp-author-suggest" role="listbox"></div>
+															</div>
+															<button type="submit" class="button button--primary cp-icon-btn" title="Сохранить" aria-label="Сохранить"><xf:fa icon="save" /></button>
+														</div>
+													</xf:form>
+												</details>
+												<xf:form action="{$craftedRoot}{$row.crafted_item_id}/delete" class="cp-rowDeleteForm">
+													<button type="submit" class="button button--link cp-icon-btn" title="Удалить" aria-label="Удалить"><xf:fa icon="fa-solid fa-eraser" /></button>
+												</xf:form>
+											</span>
+										</td>
+									</xf:if>
+								</tr>
+							</xf:foreach>
+						<xf:else />
+							<xf:if is="$canManageBackpack">
+								<tr><td colspan="6" class="cp-empty">{{ phrase('enterum_char_profile_bp_empty_crafted') }}</td></tr>
+							<xf:else />
+								<tr><td colspan="5" class="cp-empty">{{ phrase('enterum_char_profile_bp_empty_crafted') }}</td></tr>
+							</xf:if>
+						</xf:if>
+						</tbody>
+					</table>
+				</div>
+
+				<xf:if is="$craftedTotal > $craftedPerPage">
+					<xf:pagenav page="{$craftedPage}" perpage="{$craftedPerPage}" total="{$craftedTotal}"
+						link="members/backpack" data="{$user}" params="{{ {'sub': 'crafted', '#': 'crafted'} }}" wrapperclass="block-outer block-outer--after cp-backpack-block" />
+				</xf:if>
+
+				<xf:if is="$canManageBackpack">
+					<xf:form action="{$craftedRoot}add" class="cp-add-row cp-backpack-block" id="cp-crafted-add">
+						<div class="cp-add-fields cp-add-fields--crafted">
+							<input type="text" name="item_name" class="input cp-bp-addField cp-bp-addField--name" placeholder="Название предмета" />
+							<input type="url" name="item_url" class="input cp-bp-addField cp-bp-addField--url" placeholder="Ссылка на предмет" />
+							<input type="text" name="item_type" class="input cp-bp-addField cp-bp-addField--type" placeholder="Тип предмета" />
+							<input type="number" name="item_level" class="input cp-bp-addField cp-bp-addField--level" min="0" placeholder="Ур" />
+							<input type="url" name="request_url" class="input cp-bp-addField cp-bp-addField--request" placeholder="Ссылка" />
+							<div class="cp-author-search cp-bp-addField cp-bp-addField--author" data-find-url="{$findUsersUrl}">
+								<input type="text" name="author_name" class="input cp-author-input" autocomplete="off" placeholder="@ник" />
+								<div class="cp-suggest cp-author-suggest" role="listbox"></div>
+							</div>
+							<button type="submit" class="cp-btn-plus" title="Добавить" aria-label="Добавить">+</button>
+						</div>
+					</xf:form>
+				</xf:if>
+			</div>
+
+			<div class="cp-backpack cp-backpack--other cp-pageSection" id="other"<xf:if is="$subTab != 'other'"> style="display:none"</xf:if>>
+				<xf:if is="$canManageBackpackOther">
+					<div class="block cp-other-editWrap">
+						<details class="cp-other-editDetails" id="cpOtherEdit">
+							<summary class="button button--link cp-other-editToggle" title="Редактировать" aria-label="Редактировать">
+								<xf:fa icon="edit" /> Редактировать
+							</summary>
+							<div class="cp-other-editPanel">
+								<xf:form action="{$otherRoot}save" ajax="true" class="block">
+									<div class="block-container">
+										<div class="block-body">
+											<xf:editorrow
+												name="message"
+												value="{$backpackOtherBbcode}"
+												rowtype="fullWidth noLabel"
+												data-min-height="280" />
+										</div>
+										<xf:submitrow submit="{{ phrase('save') }}" icon="save" rowtype="simple" />
+									</div>
+								</xf:form>
+							</div>
+						</details>
+					</div>
+				</xf:if>
+
+				<div class="block cp-other-readWrap">
+					<div class="block-container">
+						<div class="block-body">
+							<xf:if is="$hasBackpackOtherToShow">
+								<article class="message-body">
+									<div class="bbWrapper cp-other-content">{$backpackOtherHtml|raw}</div>
+								</article>
+							<xf:else />
+								<p class="cp-empty">{{ phrase('enterum_char_profile_bp_empty_other') }}</p>
+							</xf:if>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<xf:if is="$canManageBackpack">
+<script>
+(function () {
+	function esc(s) {
+		var d = document.createElement('div');
+		d.textContent = s;
+		return d.innerHTML;
+	}
+
+	function bindAuthorSearch(wrap) {
+		var findUrl = wrap.getAttribute('data-find-url') || '';
+		var input = wrap.querySelector('.cp-author-input');
+		var box = wrap.querySelector('.cp-author-suggest');
+		if (!findUrl || !input || !box) return;
+
+		var timer;
+		function closeSuggest() {
+			box.classList.remove('is-open');
+			box.innerHTML = '';
+		}
+		function render(found) {
+			box.innerHTML = '';
+			if (!found || !found.length) {
+				closeSuggest();
+				return;
+			}
+			found.forEach(function (u) {
+				var b = document.createElement('button');
+				b.type = 'button';
+				b.innerHTML = esc(u.username) + ' <span class="muted">#' + u.user_id + '</span>';
+				b.addEventListener('click', function () {
+					input.value = u.username;
+					closeSuggest();
+				});
+				box.appendChild(b);
+			});
+			box.classList.add('is-open');
+		}
+		input.addEventListener('input', function () {
+			clearTimeout(timer);
+			var q = (input.value || '').trim();
+			if (q.length < 2 && q.indexOf('@') !== 0) {
+				closeSuggest();
+				return;
+			}
+			timer = setTimeout(function () {
+				var sep = findUrl.indexOf('?') >= 0 ? '&' : '?';
+				fetch(findUrl + sep + 'q=' + encodeURIComponent(q), {
+					credentials: 'same-origin',
+					headers: { 'X-Requested-With': 'XMLHttpRequest' }
+				}).then(function (r) { return r.json(); }).then(function (j) {
+					render((j && j.results) ? j.results : []);
+				}).catch(closeSuggest);
+			}, 250);
+		});
+	}
+
+	document.querySelectorAll('.cp-author-search').forEach(bindAuthorSearch);
+})();
+</script>
+</xf:if>
+
+<xf:if is="$canManageBackpackOther">
+<script>
+(function () {
+	var details = document.getElementById('cpOtherEdit');
+	if (!details) return;
+
+	details.addEventListener('toggle', function () {
+		if (!details.open || typeof XF === 'undefined') return;
+		XF.activate(details);
+		window.setTimeout(function () {
+			XF.layoutChange();
+		}, 100);
+	});
+})();
+</script>
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_character_sheet" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_character_sheet') }} - {$user.username}</xf:title>
+
+<xf:css src="enterum_char_profile.less" />
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body">
+			<xf:include template="enterum_char_profile_tabs" />
+
+			<div class="cp-sheet">
+				<ul class="cp-sheetFutureTabs listPlain">
+					<li><i class="fa-solid fa-person"></i> Персонаж</li>
+					<li><i class="fa-solid fa-wand-magic-sparkles"></i> Колдовство</li>
+					<li><i class="fa-solid fa-hand"></i> Мастерство</li>
+					<li><i class="fa-solid fa-medal"></i> Способности</li>
+					<li><i class="fa-solid fa-clipboard-list"></i> Дополнительно</li>
+				</ul>
+				<p class="cp-placeholder">{{ phrase('enterum_char_profile_coming_soon') }}</p>
+			</div>
+		</div>
+	</div>
+</div>]]></template>
+
+  <template type="admin" title="enterum_char_profile_acp_logs" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('admin_navigation.enterum_char_profile_logs') }}</xf:title>
+
+<xf:css src="enterum_char_profile_acp.less" />
+
+<xf:if is="!$loggingEnabled">
+	<div class="blockMessage blockMessage--important blockMessage--iconic" style="margin-bottom:10px;">
+		{{ phrase('enterum_char_profile_log_disabled') }}
+	</div>
+</xf:if>
+
+<xf:if is="!$hasActionLogTable">
+	<div class="blockMessage blockMessage--warning blockMessage--iconic" style="margin-bottom:10px;">
+		{{ phrase('enterum_char_profile_log_table_missing') }}
+	</div>
+</xf:if>
+
+<div class="block" style="margin-bottom: 10px;">
+	<div class="block-container">
+		<div class="block-body block-row">
+			<xf:foreach loop="$contentTypeTabs" value="$tab">
+				<a href="{{ link('character-profile/logs', null, {'type': $tab.key, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': $sort, 'direction': $direction}) }}" class="button<xf:if is="$filterType == $tab.key"> button--primary</xf:if>" style="margin-right:6px; margin-bottom:6px;">{$tab.label}</a>
+			</xf:foreach>
+		</div>
+	</div>
+</div>
+
+<xf:form action="{{ link('character-profile/logs') }}" class="block" style="margin-bottom:10px;">
+	<div class="block-container">
+		<div class="block-body block-row">
+			<div style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;">
+				<div>
+					<label style="display:block; margin-bottom:3px;">{{ phrase('enterum_char_profile_log_filter_target') }}</label>
+					<input type="text" name="target_user" value="{$filterTargetUser}" class="input" />
+				</div>
+				<div>
+					<label style="display:block; margin-bottom:3px;">{{ phrase('enterum_char_profile_log_filter_actor') }}</label>
+					<input type="text" name="actor_user" value="{$filterActorUser}" class="input" />
+				</div>
+				<div>
+					<label style="display:block; margin-bottom:3px;">{{ phrase('enterum_char_profile_log_filter_action') }}</label>
+					<select name="action" class="input">
+						<xf:foreach loop="$actionOptions" value="$action">
+							<option value="{$action.key}"{{ $filterAction == $action.key ? ' selected="selected"' : '' }}>{$action.label}</option>
+						</xf:foreach>
+					</select>
+				</div>
+				<div>
+					<label style="display:block; margin-bottom:3px;">{{ phrase('enterum_char_profile_log_filter_date_from') }}</label>
+					<input type="date" name="date_from" value="{$filterDateFrom}" class="input" />
+				</div>
+				<div>
+					<label style="display:block; margin-bottom:3px;">{{ phrase('enterum_char_profile_log_filter_date_to') }}</label>
+					<input type="date" name="date_to" value="{$filterDateTo}" class="input" />
+				</div>
+				<input type="hidden" name="type" value="{$filterType}" />
+				<input type="hidden" name="sort" value="{$sort}" />
+				<input type="hidden" name="direction" value="{$direction}" />
+				<div>
+					<button type="submit" class="button button--primary">{{ phrase('enterum_char_profile_log_filter_submit') }}</button>
+					<a href="{{ link('character-profile/logs', null, {'type': $filterType}) }}" class="button">{{ phrase('enterum_char_profile_log_filter_reset') }}</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</xf:form>
+
+<xf:if is="$rows is not empty">
+	<div class="block cp-acpLogs">
+		<div class="block-container">
+			<div class="block-body">
+				<xf:datalist>
+					<xf:datarow rowclass="dataList-row--header">
+						<xf:cell class="dataList-cell--min">
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'date', 'direction': ($sort == 'date' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_date') }}</a>
+						</xf:cell>
+						<xf:cell class="dataList-cell--min">
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'target', 'direction': ($sort == 'target' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_target') }}</a>
+						</xf:cell>
+						<xf:cell class="dataList-cell--min">
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'actor', 'direction': ($sort == 'actor' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_actor') }}</a>
+						</xf:cell>
+						<xf:cell class="dataList-cell--min">
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'type', 'direction': ($sort == 'type' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_type') }}</a>
+						</xf:cell>
+						<xf:cell class="dataList-cell--min">{{ phrase('enterum_char_profile_log_col_action') }}</xf:cell>
+						<xf:cell class="dataList-cell--min">{{ phrase('enterum_char_profile_log_col_id') }}</xf:cell>
+						<xf:cell>{{ phrase('enterum_char_profile_log_col_details') }}</xf:cell>
+					</xf:datarow>
+
+					<xf:foreach loop="$rows" value="$row">
+						<xf:datarow>
+							<xf:cell class="dataList-cell--min">
+								<xf:date time="{$row.log_date}" />
+							</xf:cell>
+							<xf:cell class="dataList-cell--min">{$row.target_username|default('—')}</xf:cell>
+							<xf:cell class="dataList-cell--min">{$row.actor_username|default('—')}</xf:cell>
+							<xf:cell class="dataList-cell--min">{$row.content_type|default('—')}</xf:cell>
+							<xf:cell class="dataList-cell--min">
+								<xf:if is="$row.action == 'add'">{{ phrase('enterum_char_profile_log_action_add') }}</xf:if>
+								<xf:if is="$row.action == 'edit'">{{ phrase('enterum_char_profile_log_action_edit') }}</xf:if>
+								<xf:if is="$row.action == 'delete'">{{ phrase('enterum_char_profile_log_action_delete') }}</xf:if>
+								<xf:if is="$row.action != 'add' AND $row.action != 'edit' AND $row.action != 'delete'">{$row.action|default('—')}</xf:if>
+							</xf:cell>
+							<xf:cell class="dataList-cell--min">{$row.content_id|default('—')}</xf:cell>
+							<xf:cell><div class="cp-acpLogs-details">{$row.details}</div></xf:cell>
+						</xf:datarow>
+					</xf:foreach>
+				</xf:datalist>
+			</div>
+		</div>
+	</div>
+
+	<xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="character-profile/logs" params="{$filterParams}" wrapperclass="block-outer block-outer--after" />
+<xf:else />
+	<div class="blockMessage">{{ phrase('enterum_char_profile_log_empty') }}</div>
+</xf:if>]]></template>
+
+  <template type="admin" title="enterum_char_profile_acp.less" version_id="1000070" version_string="1.0.0"><![CDATA[.cp-acpLogs-details {
+	display: block;
+	max-width: 520px;
+	word-break: break-word;
+	overflow-wrap: break-word;
+	white-space: normal;
+	line-height: 1.45;
+}
+]]></template>
+
+  <template type="public" title="enterum_char_profile.less" version_id="1000073" version_string="1.0.3"><![CDATA[.cp-tabs,
+.cp-subTabs {
+	margin-bottom: 12px;
+}
+
+.cp-hero {
+	width: 90%;
+	max-width: 100%;
+	margin: 0 auto;
+	box-sizing: border-box;
+	padding-bottom: 24px;
+}
+
+.cp-pageSection {
+	padding-bottom: 24px;
+	box-sizing: border-box;
+}
+
+.cp-heroHeader {
+	font-size: 22px;
+	font-weight: bold;
+	color: #dd5000;
+}
+
+.cp-heroDots {
+	margin-left: 8px;
+}
+
+.cp-heroDot {
+	font-size: 20px;
+	line-height: 1;
+	vertical-align: middle;
+}
+
+.cp-heroDot--filled {
+	color: #dd5000;
+}
+
+.cp-heroDot--empty {
+	color: #dd5000;
+	opacity: 0.35;
+}
+
+.cp-heroDivider {
+	margin: 8px 0 12px;
+	border: 0;
+	border-top: 1px solid @xf-borderColor;
+}
+
+.cp-placeholder {
+	color: @xf-textColorMuted;
+	font-style: italic;
+}
+
+.cp-sheet {
+	width: 90%;
+	max-width: 100%;
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+.cp-sheetFutureTabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 12px;
+	color: @xf-textColorMuted;
+}
+
+.cp-heroSpoiler {
+	margin: 8px 0 16px;
+}
+
+.cp-heroSpoiler summary {
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.cp-heroAddRow {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+
+.cp-heroAddFields {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: flex-end;
+	justify-content: center;
+	margin: 8px auto 0;
+	width: 100%;
+	max-width: 100%;
+}
+
+.cp-heroField {
+	min-width: 120px;
+}
+
+.cp-heroField--short {
+	max-width: 80px;
+}
+
+.cp-heroField--submit button {
+	min-width: 40px;
+}
+
+.cp-heroLogGrid {
+	margin: 12px auto 0;
+	width: 100%;
+	max-width: 100%;
+}
+
+.cp-heroLogRow {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	margin-bottom: 10px;
+}
+
+.cp-heroLogCell {
+	min-width: 0;
+}
+
+.cp-heroLogEntry {
+	min-width: 0;
+}
+
+.cp-heroLogLine {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+	min-width: 0;
+	width: 100%;
+}
+
+.cp-heroLogText {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.cp-heroLogEntry--overflow .cp-heroLogText,
+.cp-heroLogEntry--overflow .cp-heroLogDate,
+.cp-heroLogEntry--overflow .cp-heroLogAmount,
+.cp-heroLogEntry--overflow .cp-heroLogLink {
+	color: #dd5000;
+}
+
+.cp-heroLogEntry--loss .cp-heroLogText,
+.cp-heroLogEntry--loss .cp-heroLogDate,
+.cp-heroLogEntry--loss .cp-heroLogAmount,
+.cp-heroLogEntry--loss .cp-heroLogLink {
+	color: #ff0028;
+}
+
+.cp-heroLogEntry--overflow .cp-heroLogLink {
+	color: #dd5000 !important;
+}
+
+.cp-heroLogEntry--loss .cp-heroLogLink {
+	color: #ff0028 !important;
+}
+
+.cp-heroLogLink {
+	color: inherit;
+	font-style: italic;
+	text-decoration: underline !important;
+}
+
+.cp-heroLogLink:hover,
+.cp-heroLogLink:focus {
+	text-decoration: underline !important;
+}
+
+.cp-heroLogEdit {
+	flex: 0 0 auto;
+	min-width: 0;
+}
+
+.cp-heroLogEdit[open] {
+	flex: 1 1 100%;
+	width: 100%;
+	max-width: 100%;
+}
+
+.cp-heroLogEdit summary {
+	cursor: pointer;
+	list-style: none;
+	display: inline-flex;
+}
+
+.cp-heroLogEdit[open] > summary {
+	margin-bottom: 8px;
+}
+
+.cp-heroDeleteForm {
+	flex-shrink: 0;
+}
+
+.cp-heroLogEditForm {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	margin-top: 8px;
+	box-sizing: border-box;
+}
+
+.cp-heroLogEditForm .cp-heroAddFields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+	gap: 8px;
+	align-items: end;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	margin: 0;
+	justify-content: stretch;
+}
+
+.cp-heroLogEditForm .cp-heroField {
+	min-width: 0;
+	width: 100%;
+	max-width: 100%;
+}
+
+.cp-heroLogEditForm .cp-heroField .input,
+.cp-heroLogEditForm .cp-heroField select {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.cp-heroLogEditForm .cp-heroField--short {
+	max-width: none;
+}
+
+.cp-heroDeleteBtn {
+	padding: 0 4px;
+}
+
+.cp-reputation {
+	width: 90%;
+	max-width: 100%;
+	margin: 16px auto 0;
+	box-sizing: border-box;
+}
+
+.cp-sectionTitle {
+	width: 90%;
+	max-width: 100%;
+	margin: 20px auto 0;
+	box-sizing: border-box;
+	font-size: 22px;
+	font-weight: bold;
+}
+
+.cp-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+	background: @xf-contentBg;
+}
+
+.cp-table th,
+.cp-table td {
+	border: 1px solid @xf-borderColor;
+	padding: 4px 6px;
+}
+
+.cp-table-wrap--rep-summary {
+	width: 50%;
+	margin: 0 auto 12px;
+}
+
+.cp-table--rep-summary {
+	width: 100%;
+	font-size: 13.5px;
+	font-weight: 700;
+}
+
+.cp-table--rep-summary th:nth-child(1),
+.cp-table--rep-summary td:nth-child(1) {
+	text-align: left;
+}
+
+.cp-table--rep-summary th:nth-child(n+2),
+.cp-table--rep-summary td:nth-child(n+2) {
+	text-align: center;
+}
+
+.cp-table--rep-summary td.cp-rep-negative {
+	color: rgb(245, 0, 0);
+}
+
+.cp-rep-tabs {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 6px;
+	overflow-x: auto;
+	margin: 10px 0;
+	position: relative;
+	padding-bottom: 7px;
+}
+
+.cp-rep-tabs::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 7px;
+	border: 1px solid #222222;
+	border-top: 0;
+	border-radius: 0 0 6px 6px;
+	background: #bf00ff;
+}
+
+.cp-rep-tabs--aramidis::after { background: #bf00ff; }
+.cp-rep-tabs--korzus::after { background: rgb(255, 191, 0); }
+.cp-rep-tabs--union::after { background: #7df9ff; }
+
+.cp-rep-tab {
+	position: relative;
+	overflow: hidden;
+	flex: 0 0 auto;
+	padding: 6px 12px;
+	border-radius: 4px 4px 0 0;
+	text-decoration: none;
+	font-weight: 700;
+	color: #000;
+	border: 1px solid #222222;
+	border-bottom: 0;
+}
+
+.cp-rep-tab--aramidis { background: #bf00ff; }
+.cp-rep-tab--korzus { background: rgb(255, 191, 0); }
+.cp-rep-tab--union { background: #7df9ff; }
+
+.cp-rep-tab::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: rgba(120, 120, 120, 0.45);
+	pointer-events: none;
+}
+
+.cp-rep-tab.is-active::after {
+	display: none;
+}
+
+.cp-table-wrap--rep-main {
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.cp-rep-faction-list {
+	margin-bottom: 12px;
+}
+
+.cp-rep-faction-spoiler {
+	margin-bottom: 4px;
+	border-bottom: 1px solid @xf-borderColor;
+}
+
+.cp-rep-faction-spoiler > summary {
+	list-style: none;
+	cursor: pointer;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 120px 220px;
+	gap: 6px;
+	align-items: center;
+	padding: 4px 6px;
+}
+
+.cp-rep-faction-spoiler > summary::-webkit-details-marker {
+	display: none;
+}
+
+.cp-rep-faction-spoiler .cp-rep-faction-name {
+	display: inline-flex;
+	align-items: center;
+}
+
+.cp-rep-faction-spoiler .cp-rep-faction-name::before {
+	content: "▸";
+	margin-right: 7px;
+}
+
+.cp-rep-faction-spoiler[open] .cp-rep-faction-name::before {
+	content: "▾";
+}
+
+.cp-rep-faction-spoiler .cp-rep-faction-total,
+.cp-rep-faction-spoiler .cp-rep-faction-relation {
+	text-align: center;
+}
+
+.cp-rep-faction-items {
+	padding: 4px 0 8px 24px;
+}
+
+.cp-rep-entry {
+	border-bottom: 1px solid @xf-borderColor;
+	padding: 6px 0;
+}
+
+.cp-rep-entry:last-child {
+	border-bottom: 0;
+}
+
+.cp-rep-entryLine {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	min-width: 0;
+}
+
+.cp-rep-entryText {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 8px;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.cp-rep-entryFaction {
+	font-weight: 700;
+}
+
+.cp-rep-entryAmount--negative {
+	color: rgb(245, 0, 0);
+}
+
+.cp-rep-entryLink {
+	font-style: italic;
+	text-decoration: underline;
+}
+
+.cp-rep-entryActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.cp-rep-entryEdit {
+	flex: 0 0 auto;
+}
+
+.cp-rep-entryEdit[open] {
+	flex: 1 1 100%;
+	width: 100%;
+}
+
+.cp-rep-entryEdit summary {
+	cursor: pointer;
+	list-style: none;
+	display: inline-flex;
+}
+
+.cp-rep-entryEdit[open] > summary {
+	margin-bottom: 8px;
+}
+
+.cp-rep-deleteForm {
+	display: inline;
+	margin: 0;
+}
+
+.cp-rep-editForm {
+	width: 100%;
+	margin-top: 8px;
+}
+
+.cp-rep-addForm {
+	margin-top: 12px;
+	padding: 10px 0;
+	border-top: 1px dashed @xf-borderColor;
+}
+
+.cp-rep-addFields {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+}
+
+.cp-rep-addField {
+	flex: 1 1 140px;
+	min-width: 100px;
+	max-width: 220px;
+}
+
+.cp-rep-addField--biome {
+	flex: 0 1 130px;
+	max-width: 130px;
+}
+
+.cp-rep-addField--qty {
+	flex: 0 1 72px;
+	max-width: 72px;
+	min-width: 72px;
+}
+
+.cp-rep-addField--url {
+	flex: 1 1 180px;
+	max-width: 260px;
+}
+
+.cp-rep-saveBtn {
+	flex: 0 0 auto;
+	min-width: 40px;
+}
+
+.cp-relation-pill {
+	display: inline-flex !important;
+	align-items: center !important;
+	padding: 2px 6px !important;
+	line-height: 1 !important;
+	font-size: 14px !important;
+	box-sizing: border-box !important;
+	vertical-align: baseline !important;
+	min-height: 0 !important;
+	margin: 0 2px !important;
+	border-radius: 4px !important;
+	font-weight: 700 !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+	white-space: nowrap !important;
+}
+
+.cp-relation-pill--despised { background: #e30022; color: #222; border: 1px solid #333; }
+.cp-relation-pill--hated { background: rgb(249, 77, 0); color: #222; border: 1px solid #333; }
+.cp-relation-pill--wanted { background: rgb(255, 126, 0); color: #222; border: 1px solid #333; }
+.cp-relation-pill--suspicious { background: #ffbf00; color: #222; border: 1px solid #333; }
+.cp-relation-pill--neutral { background: rgb(238, 238, 238); color: #222; border: 1px solid #333; }
+.cp-relation-pill--friendly { background: rgba(0, 255, 0, 0.68); color: #222; border: 1px solid #333; }
+.cp-relation-pill--promising { background: #00ccff; color: #222; border: 1px solid #333; }
+.cp-relation-pill--hero { background: #0000cd; color: #fff; border: 1px solid #333; }
+.cp-relation-pill--legend { background: rgb(113, 0, 148); color: #fff; border: 1px solid #333; }
+
+.cp-relation-tooltip {
+	position: fixed;
+	z-index: 10000;
+	width: 300px;
+	max-width: 300px;
+	box-sizing: border-box;
+	padding: 8px 10px;
+	border: 1px solid @xf-borderColor;
+	border-radius: 6px;
+	background: @xf-contentBg;
+	color: @xf-textColor;
+	line-height: 1.35;
+	white-space: normal;
+	word-break: break-word;
+	pointer-events: none;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.cp-row-negative .cp-amount-negative {
+	color: rgb(245, 0, 0);
+}
+
+.cp-add-row {
+	background: @xf-contentBg;
+	border: 1px dashed @xf-borderColor;
+	padding: 10px;
+	margin-top: 8px;
+}
+
+.cp-add-row--rep-main {
+	width: 100%;
+	max-width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	box-sizing: border-box;
+}
+
+.cp-add-fields {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: flex-end;
+}
+
+.cp-add-field {
+	flex: 1 1 140px;
+	min-width: 120px;
+}
+
+.cp-add-field--wide {
+	flex: 2 1 220px;
+}
+
+.cp-btn-plus {
+	padding: 7px 14px;
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.cp-icon-btn {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	min-width: 0;
+	padding: 0;
+	color: inherit;
+}
+
+.cp-actions {
+	white-space: nowrap;
+}
+
+.cp-empty {
+	color: @xf-textColorMuted;
+	font-style: italic;
+	text-align: center;
+}
+
+.cp-backpack-block {
+	width: 90%;
+	max-width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	box-sizing: border-box;
+}
+
+.cp-table-wrap--backpack {
+	overflow-x: auto;
+}
+
+.cp-backpackTable {
+	width: 100%;
+	border-collapse: collapse;
+	border: 0;
+}
+
+.cp-backpackTable--grid th,
+.cp-backpackTable--grid td {
+	padding: 8px 10px;
+	border: 1px solid @xf-borderColor;
+	vertical-align: middle;
+}
+
+.cp-backpackTable--grid thead tr:first-child th {
+	border-top: 0;
+}
+
+.cp-backpackTable--grid tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.cp-backpackTable--grid th:first-child,
+.cp-backpackTable--grid td:first-child {
+	border-left: 0;
+}
+
+.cp-backpackTable--grid th:last-child,
+.cp-backpackTable--grid td:last-child {
+	border-right: 0;
+}
+
+.cp-backpackTable--activity th {
+	font-weight: 700;
+	text-align: center;
+}
+
+.cp-backpackTable--activity td {
+	text-align: left;
+}
+
+.cp-backpackTable--activity th.cp-col-level,
+.cp-backpackTable--activity th.cp-col-rarity,
+.cp-backpackTable--activity td.cp-col-level,
+.cp-backpackTable--activity td.cp-col-rarity {
+	text-align: center;
+}
+
+.cp-backpackTable--crafted th,
+.cp-backpackTable--crafted td {
+	text-align: center;
+}
+
+.cp-backpackTable--crafted .cp-col-name {
+	text-align: left;
+}
+
+.cp-backpackTable--crafted th.cp-col-type {
+	text-align: center;
+}
+
+.cp-backpackTable--crafted td.cp-col-type {
+	text-align: left;
+}
+
+.cp-backpack--other {
+	width: 90%;
+	max-width: 100%;
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+.cp-backpack--other .cp-other-editWrap,
+.cp-backpack--other .cp-other-readWrap {
+	border: 0;
+	box-shadow: none;
+	background: transparent;
+}
+
+.cp-backpack--other .cp-other-editWrap .block-container,
+.cp-backpack--other .cp-other-readWrap .block-container,
+.cp-backpack--other .cp-other-editPanel .block-container {
+	border: 0;
+	box-shadow: none;
+	background: transparent;
+}
+
+.cp-other-editWrap {
+	margin-bottom: 12px;
+}
+
+.cp-other-editDetails > .cp-other-editToggle {
+	list-style: none;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0 0 8px;
+}
+
+.cp-other-editDetails > .cp-other-editToggle::-webkit-details-marker {
+	display: none;
+}
+
+.cp-other-editPanel {
+	width: 100%;
+	margin-top: 4px;
+}
+
+.cp-other-editPanel .block-container {
+	max-width: 100%;
+}
+
+.cp-other-editPanel .fr-box,
+.cp-other-editPanel .inputWrapper--editor,
+.cp-other-editPanel .fr-wrapper {
+	min-height: 280px;
+}
+
+.cp-other-editPanel .fr-box {
+	border-color: transparent;
+}
+
+.cp-other-readWrap .block-container {
+	max-width: 100%;
+}
+
+.cp-other-content {
+	max-width: 100%;
+	box-sizing: border-box;
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+.cp-backpack--other .cp-empty {
+	padding: 8px 0 16px;
+	margin: 0;
+}
+
+.cp-bp-rowIcon {
+	font-size: 16px;
+	margin-right: 6px;
+	color: @xf-textColorMuted;
+	vertical-align: middle;
+}
+
+.cp-col-level {
+	width: 56px;
+	white-space: nowrap;
+}
+
+.cp-col-rarity {
+	width: 130px;
+}
+
+.cp-col-actions {
+	width: 72px;
+	white-space: nowrap;
+}
+
+.cp-reasonCell {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.cp-reasonCell-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.cp-reasonCell-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex: 0 0 auto;
+	white-space: nowrap;
+}
+
+.cp-reasonEdit {
+	display: inline-block;
+	position: relative;
+}
+
+.cp-reasonEdit > summary,
+.cp-rowEdit > summary {
+	list-style: none;
+	cursor: pointer;
+}
+
+.cp-reasonEdit > summary::-webkit-details-marker,
+.cp-rowEdit > summary::-webkit-details-marker {
+	display: none;
+}
+
+.cp-reasonDeleteForm,
+.cp-rowDeleteForm {
+	display: inline;
+}
+
+.cp-rowActions {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+}
+
+.cp-rowEdit {
+	display: inline-block;
+	position: relative;
+}
+
+.cp-add-row--activity-edit,
+.cp-add-row--inline-edit {
+	position: absolute;
+	right: 0;
+	top: 100%;
+	z-index: 50;
+	min-width: 640px;
+	margin-top: 6px;
+	padding: 10px;
+	background: @xf-contentBg;
+	border: 1px solid @xf-borderColor;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.cp-add-fields--activity,
+.cp-add-fields--crafted {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: flex-end;
+}
+
+.cp-bp-addField {
+	flex: 1 1 120px;
+	min-width: 90px;
+}
+
+.cp-bp-addField--name { flex: 1.3 1 150px; }
+.cp-bp-addField--url { flex: 1.3 1 150px; }
+.cp-bp-addField--type { flex: 1.1 1 130px; }
+.cp-bp-addField--level {
+	flex: 0 1 56px;
+	max-width: 56px;
+	min-width: 56px;
+}
+.cp-bp-addField--rarity { flex: 0 1 110px; max-width: 130px; }
+.cp-bp-addField--reason { flex: 1.4 1 160px; }
+.cp-bp-addField--source { flex: 1.2 1 140px; }
+.cp-bp-addField--request { flex: 1 1 120px; }
+.cp-bp-addField--author {
+	flex: 0 1 120px;
+	max-width: 140px;
+	position: relative;
+}
+
+.cp-add-fields--crafted-edit {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: flex-end;
+}
+
+.cp-add-fields--crafted-edit .input {
+	flex: 1 1 120px;
+	min-width: 90px;
+}
+
+.cp-itemQuality {
+	display: inline-flex !important;
+	align-items: center !important;
+	padding: 2px 6px !important;
+	line-height: 1 !important;
+	font-size: 14px !important;
+	box-sizing: border-box !important;
+	vertical-align: baseline !important;
+	min-height: 0 !important;
+	margin: 0 2px !important;
+	border-radius: 4px !important;
+	font-weight: 600 !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+	white-space: nowrap;
+}
+
+.cp-itemQuality--common {
+	background: #FFFED5;
+	color: #000;
+	border: 1px solid #333;
+}
+
+.cp-itemQuality--uncommon {
+	background: #FF8C00;
+	color: #000;
+	border: 1px solid #333;
+}
+
+.cp-itemQuality--rare {
+	background: #00008B;
+	color: #fff;
+	border: 1px solid #fff;
+}
+
+.cp-itemQuality--unique {
+	background: #71007D;
+	color: #fff;
+	border: 1px solid #fff;
+}
+
+.cp-itemDesc {
+	margin-top: 4px;
+	font-size: 13px;
+}
+
+.cp-itemDesc summary {
+	cursor: pointer;
+	color: @xf-textColorMuted;
+}
+
+.cp-add-field--level {
+	flex: 0 1 72px;
+	max-width: 72px;
+	min-width: 72px;
+}
+
+.cp-author-search {
+	position: relative;
+}
+
+.cp-author-search .cp-author-input {
+	width: 100%;
+}
+
+.cp-suggest {
+	border: 1px solid @xf-borderColor;
+	background: @xf-contentBg;
+	max-height: 200px;
+	overflow-y: auto;
+	margin-top: 4px;
+	display: none;
+	position: absolute;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cp-suggest.is-open {
+	display: block;
+}
+
+.cp-suggest button {
+	display: block;
+	width: 100%;
+	text-align: left;
+	padding: 6px 8px;
+	border: 0;
+	border-bottom: 1px solid @xf-borderColorLight;
+	background: @xf-contentBg;
+	cursor: pointer;
+}
+
+.cp-suggest button:hover {
+	background: @xf-contentHighlightBg;
+}
+
+@media (max-width: @xf-responsiveMedium)
+{
+	.cp-heroLogRow {
+		grid-template-columns: 1fr;
+	}
+
+	.cp-table-wrap--rep-summary,
+	.cp-rep-faction-spoiler > summary {
+		width: 100%;
+		grid-template-columns: 1fr;
+	}
+
+	.cp-backpack-block {
+		width: 100%;
+	}
+
+	.cp-add-fields--activity,
+	.cp-add-fields--crafted {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+}]]></template>
+</templates>

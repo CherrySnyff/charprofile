@@ -1,0 +1,23 @@
+{
+    "legacy_addon_id": "",
+    "title": "Профиль игрока",
+    "description": "Вкладки Репутация и Рюкзак в профиле пользователя XenForo 2.2 (очки героизма, репутация по биомам, рюкзак, ACP-логи).",
+    "version_id": 1000073,
+    "version_string": "1.0.3",
+    "dev": "EvRa",
+    "dev_url": "",
+    "faq_url": "",
+    "support_url": "",
+    "extra_urls": [],
+    "require": {
+        "XF": [
+            2020070,
+            "XenForo 2.2.0 or higher"
+        ],
+        "php": [
+            "7.2.0",
+            "PHP 7.2.0 or higher"
+        ]
+    },
+    "icon": "icon.webp"
+}

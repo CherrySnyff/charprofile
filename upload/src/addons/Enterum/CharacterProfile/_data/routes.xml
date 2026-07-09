@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<routes>
+  <route route_type="public" route_prefix="members" sub_name="reputation" format=":int&lt;user_id&gt;/reputation/" controller="Enterum\CharacterProfile:Reputation"/>
+  <route route_type="public" route_prefix="members" sub_name="reputation_hero" format=":int&lt;user_id&gt;/reputation/hero/" controller="Enterum\CharacterProfile:Hero"/>
+  <route route_type="public" route_prefix="members" sub_name="reputation_hero_log" format=":int&lt;user_id&gt;/reputation/hero/:int&lt;hero_log_id&gt;/" controller="Enterum\CharacterProfile:Hero"/>
+  <route route_type="public" route_prefix="members" sub_name="reputation_log" format=":int&lt;user_id&gt;/reputation/log/" controller="Enterum\CharacterProfile:ReputationLog"/>
+  <route route_type="public" route_prefix="members" sub_name="reputation_log_entry" format=":int&lt;user_id&gt;/reputation/log/:int&lt;reputation_log_id&gt;/" controller="Enterum\CharacterProfile:ReputationLog"/>
+  <route route_type="public" route_prefix="members" sub_name="backpack" format=":int&lt;user_id&gt;/backpack/" controller="Enterum\CharacterProfile:Backpack"/>
+  <route route_type="public" route_prefix="members" sub_name="backpack_activity" format=":int&lt;user_id&gt;/backpack/activity/" controller="Enterum\CharacterProfile:BackpackActivity"/>
+  <route route_type="public" route_prefix="members" sub_name="backpack_activity_item" format=":int&lt;user_id&gt;/backpack/activity/:int&lt;activity_item_id&gt;/" controller="Enterum\CharacterProfile:BackpackActivity"/>
+  <route route_type="public" route_prefix="members" sub_name="backpack_crafted" format=":int&lt;user_id&gt;/backpack/crafted/" controller="Enterum\CharacterProfile:BackpackCrafted"/>
+  <route route_type="public" route_prefix="members" sub_name="backpack_crafted_item" format=":int&lt;user_id&gt;/backpack/crafted/:int&lt;crafted_item_id&gt;/" controller="Enterum\CharacterProfile:BackpackCrafted"/>
+  <route route_type="public" route_prefix="members" sub_name="backpack_find_users" format=":int&lt;user_id&gt;/backpack/find-users" controller="Enterum\CharacterProfile:BackpackFindUsers"/>
+  <route route_type="public" route_prefix="members" sub_name="backpack_other" format=":int&lt;user_id&gt;/backpack/other/" controller="Enterum\CharacterProfile:BackpackOther"/>
+  <route route_type="public" route_prefix="members" sub_name="character-sheet" format=":int&lt;user_id&gt;/character-sheet/" controller="Enterum\CharacterProfile:CharacterSheet"/>
+  <route route_type="admin" route_prefix="character-profile" format="" controller="Enterum\CharacterProfile:Logs"/>
+  <route route_type="admin" route_prefix="character-profile" sub_name="logs" format="logs" controller="Enterum\CharacterProfile:Logs"/>
+</routes>

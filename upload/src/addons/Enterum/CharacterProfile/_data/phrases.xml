@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phrases>
+  <phrase title="option_group.enterum_char_profile" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока]]></phrase>
+  <phrase title="option_explain.charProfileAcceptedGroupId" version_id="1" version_string="0.0.1 Alpha"><![CDATA[ID группы пользователей «Принятые игроки с анкетой». При выдаче группы создаётся строка профиля.]]></phrase>
+  <phrase title="option.charProfileAcceptedGroupId" version_id="1" version_string="0.0.1 Alpha"><![CDATA[ID группы-триггера]]></phrase>
+  <phrase title="option_explain.charProfileHeroMax" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Максимальное количество отображаемых очков геройства.]]></phrase>
+  <phrase title="option.charProfileHeroMax" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Максимум очков геройства]]></phrase>
+  <phrase title="option_explain.charProfileEnableActionLog" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Записывать add/edit/delete в журнал действий.]]></phrase>
+  <phrase title="option.charProfileEnableActionLog" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Включить логирование]]></phrase>
+  <phrase title="option_explain.charProfileItemsPerPage" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Количество записей на странице в списках профиля и ACP-логах.]]></phrase>
+  <phrase title="option.charProfileItemsPerPage" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Записей на странице]]></phrase>
+  <phrase title="permission_interface.charProfile_general" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: общие права]]></phrase>
+  <phrase title="permission_interface.charProfile_management" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: управление]]></phrase>
+  <phrase title="permission.character_profile_view" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Просмотр вкладок профиля игрока]]></phrase>
+  <phrase title="permission.character_profile_manageHero" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Управление очками геройства]]></phrase>
+  <phrase title="permission.character_profile_manageHeroSupport" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Отметка «Получено за поддержку»]]></phrase>
+  <phrase title="permission.character_profile_manageReputation" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Управление репутацией]]></phrase>
+  <phrase title="permission.character_profile_manageBackpack" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Управление рюкзаком]]></phrase>
+  <phrase title="permission.character_profile_manageBackpackOwn" version_id="25" version_string="0.0.4 Alpha 5"><![CDATA[Редактирование вкладки «Прочее» в своём рюкзаке]]></phrase>
+  <phrase title="permission.character_profile_manageCharacterSheet" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Управление листом персонажа (любой)]]></phrase>
+  <phrase title="permission.character_profile_manageCharacterSheetOwn" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Редактирование своего листа персонажа]]></phrase>
+  <phrase title="permission.character_profile_viewLogs" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Просмотр логов в ACP]]></phrase>
+  <phrase title="admin_permission.characterProfile" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Управление профилем игрока]]></phrase>
+  <phrase title="admin_navigation.enterum_char_profile" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока]]></phrase>
+  <phrase title="admin_navigation.enterum_char_profile_logs" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Логи действий]]></phrase>
+  <phrase title="enterum_char_profile_back_to_profile" version_id="6" version_string="0.0.1 Alpha 6"><![CDATA[Назад к профилю]]></phrase>
+  <phrase title="enterum_char_profile_tab_reputation" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Репутация]]></phrase>
+  <phrase title="enterum_char_profile_tab_backpack" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Рюкзак]]></phrase>
+  <phrase title="enterum_char_profile_tab_character_sheet" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Лист персонажа]]></phrase>
+  <phrase title="enterum_char_profile_coming_soon" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Скоро]]></phrase>
+  <phrase title="enterum_char_profile_no_permission" version_id="8" version_string="0.0.2 Alpha"><![CDATA[У вас нет прав на выполнение этого действия.]]></phrase>
+  <phrase title="enterum_char_profile_hero_amount_invalid" version_id="8" version_string="0.0.2 Alpha"><![CDATA[Количество ОГ должно быть от 1 до 3.]]></phrase>
+  <phrase title="enterum_char_profile_hero_date_invalid" version_id="8" version_string="0.0.2 Alpha"><![CDATA[Укажите дату в формате дд.мм.гггг.]]></phrase>
+  <phrase title="enterum_char_profile_hero_source_required" version_id="8" version_string="0.0.2 Alpha"><![CDATA[Укажите ссылку и название ссылки.]]></phrase>
+  <phrase title="enterum_char_profile_url_https_required" version_id="8" version_string="0.0.2 Alpha"><![CDATA[Введите ссылку, начинающуюся с https://]]></phrase>
+  <phrase title="enterum_char_profile_rep_amount_invalid" version_id="15" version_string="0.0.3 Alpha"><![CDATA[Репутация должна быть больше 0 или меньше 0.]]></phrase>
+  <phrase title="enterum_char_profile_rep_character_required" version_id="15" version_string="0.0.3 Alpha"><![CDATA[Укажите имя персонажа.]]></phrase>
+  <phrase title="enterum_char_profile_rep_faction_required" version_id="15" version_string="0.0.3 Alpha"><![CDATA[Укажите название фракции.]]></phrase>
+  <phrase title="enterum_char_profile_bp_item_name_required" version_id="20" version_string="0.0.4 Alpha"><![CDATA[Укажите название предмета.]]></phrase>
+  <phrase title="enterum_char_profile_bp_reason_required" version_id="20" version_string="0.0.4 Alpha"><![CDATA[Укажите причину получения предмета.]]></phrase>
+  <phrase title="enterum_char_profile_bp_type_required" version_id="20" version_string="0.0.4 Alpha"><![CDATA[Укажите тип предмета.]]></phrase>
+  <phrase title="enterum_char_profile_bp_author_required" version_id="20" version_string="0.0.4 Alpha"><![CDATA[Укажите автора предмета.]]></phrase>
+  <phrase title="enterum_char_profile_bp_empty_activity" version_id="20" version_string="0.0.4 Alpha"><![CDATA[Предметов за активности пока нет.]]></phrase>
+  <phrase title="enterum_char_profile_bp_empty_crafted" version_id="20" version_string="0.0.4 Alpha"><![CDATA[Созданных предметов пока нет.]]></phrase>
+  <phrase title="enterum_char_profile_bp_empty_other" version_id="23" version_string="0.0.4 Alpha 3"><![CDATA[Раздел «Прочее» пока не заполнен.]]></phrase>
+  <phrase title="enterum_char_profile_bp_request_link" version_id="20" version_string="0.0.4 Alpha"><![CDATA[Заявка]]></phrase>
+  <phrase title="enterum_char_profile_log_disabled" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Логирование действий отключено в настройках аддона. Новые записи не создаются.]]></phrase>
+  <phrase title="enterum_char_profile_log_table_missing" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Таблица журнала действий ещё не создана. Запустите обновление аддона в ACP повторно.]]></phrase>
+  <phrase title="enterum_char_profile_log_empty" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Записей в журнале пока нет.]]></phrase>
+  <phrase title="enterum_char_profile_log_filter_target" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Профиль (ник)]]></phrase>
+  <phrase title="enterum_char_profile_log_filter_actor" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Кто изменил]]></phrase>
+  <phrase title="enterum_char_profile_log_filter_action" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Действие]]></phrase>
+  <phrase title="enterum_char_profile_log_filter_date_from" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Дата с]]></phrase>
+  <phrase title="enterum_char_profile_log_filter_date_to" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Дата по]]></phrase>
+  <phrase title="enterum_char_profile_log_filter_submit" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Фильтр]]></phrase>
+  <phrase title="enterum_char_profile_log_filter_reset" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Сброс]]></phrase>
+  <phrase title="enterum_char_profile_log_col_date" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Дата]]></phrase>
+  <phrase title="enterum_char_profile_log_col_target" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Профиль]]></phrase>
+  <phrase title="enterum_char_profile_log_col_actor" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Автор]]></phrase>
+  <phrase title="enterum_char_profile_log_col_type" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Тип]]></phrase>
+  <phrase title="enterum_char_profile_log_col_action" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Действие]]></phrase>
+  <phrase title="enterum_char_profile_log_col_id" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[ID]]></phrase>
+  <phrase title="enterum_char_profile_log_col_details" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Детали]]></phrase>
+  <phrase title="enterum_char_profile_log_tab_all" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Все]]></phrase>
+  <phrase title="enterum_char_profile_log_tab_hero" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[ОГ]]></phrase>
+  <phrase title="enterum_char_profile_log_tab_reputation" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Репутация]]></phrase>
+  <phrase title="enterum_char_profile_log_tab_backpack_activity" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Рюкзак: активности]]></phrase>
+  <phrase title="enterum_char_profile_log_tab_backpack_crafted" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Рюкзак: созданное]]></phrase>
+  <phrase title="enterum_char_profile_log_tab_backpack_other" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Рюкзак: прочее]]></phrase>
+  <phrase title="enterum_char_profile_log_tab_character_sheet" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Лист персонажа]]></phrase>
+  <phrase title="enterum_char_profile_log_action_all" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Все действия]]></phrase>
+  <phrase title="enterum_char_profile_log_action_add" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Добавление]]></phrase>
+  <phrase title="enterum_char_profile_log_action_edit" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Изменение]]></phrase>
+  <phrase title="enterum_char_profile_log_action_delete" version_id="28" version_string="0.0.5 Alpha 1"><![CDATA[Удаление]]></phrase>
+</phrases>
