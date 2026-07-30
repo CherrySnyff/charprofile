@@ -4,8 +4,8 @@
  * Единая точка проверки прав аддона «Профиль игрока».
  *
  * Используется контроллерами (флаги для UI) и сервисами (жёсткая проверка перед save).
- * Права: view, manageHero, manageHeroSupport, manageReputation, manageBackpack,
- * manageBackpackOwn, manageCharacterSheet*, viewLogs.
+ * Права «любой профиль»: manageHero, manageReputation, manageBackpack.
+ * Права «только свой»: manageHeroOwn, manageReputationOwn, manageBackpackOwn.
  * Не дублируйте hasPermission в других местах — вызывайте методы этого класса.
  */
 
@@ -44,11 +44,11 @@ class PermissionGuard extends AbstractService
     }
 
     /**
-     * Права / ОГ: можно ли управлять очками геройства (manageHero).
+     * Права / ОГ: manageHero (любой) или manageHeroOwn (только свой профиль).
      */
-    public function canManageHero(User $visitor): bool
+    public function canManageHero(User $visitor, User $profileUser): bool
     {
-        return $visitor->user_id && $visitor->hasPermission('character_profile', 'manageHero');
+        return $this->canManageForProfile($visitor, $profileUser, 'manageHero', 'manageHeroOwn');
     }
 
     /**
@@ -60,36 +60,27 @@ class PermissionGuard extends AbstractService
     }
 
     /**
-     * Права / репутация: можно ли CRUD журнала репутации (manageReputation).
+     * Права / репутация: manageReputation (любой) или manageReputationOwn (только свой).
      */
-    public function canManageReputation(User $visitor): bool
+    public function canManageReputation(User $visitor, User $profileUser): bool
     {
-        return $visitor->user_id && $visitor->hasPermission('character_profile', 'manageReputation');
+        return $this->canManageForProfile($visitor, $profileUser, 'manageReputation', 'manageReputationOwn');
     }
 
     /**
-     * Права / рюкзак: полное управление activity/crafted (manageBackpack).
+     * Права / рюкзак: manageBackpack (любой) или manageBackpackOwn (только свой).
      */
-    public function canManageBackpack(User $visitor): bool
+    public function canManageBackpack(User $visitor, User $profileUser): bool
     {
-        return $visitor->user_id && $visitor->hasPermission('character_profile', 'manageBackpack');
+        return $this->canManageForProfile($visitor, $profileUser, 'manageBackpack', 'manageBackpackOwn');
     }
 
     /**
-     * Права / рюкзак «Прочее»: manageBackpack или свой профиль + manageBackpackOwn.
+     * Права / рюкзак «Прочее»: то же, что canManageBackpack (все подвкладки рюкзака).
      */
     public function canManageBackpackOther(User $visitor, User $profileUser): bool
     {
-        if (!$visitor->user_id) {
-            return false;
-        }
-
-        if ($visitor->hasPermission('character_profile', 'manageBackpack')) {
-            return true;
-        }
-
-        return (int)$visitor->user_id === (int)$profileUser->user_id
-            && $visitor->hasPermission('character_profile', 'manageBackpackOwn');
+        return $this->canManageBackpack($visitor, $profileUser);
     }
 
     /**
@@ -137,5 +128,26 @@ class PermissionGuard extends AbstractService
         }
 
         return $profile;
+    }
+
+    /**
+     * Общая логика: право на любой профиль или на свой + *Own.
+     */
+    protected function canManageForProfile(
+        User $visitor,
+        User $profileUser,
+        string $anyPermission,
+        string $ownPermission
+    ): bool {
+        if (!$visitor->user_id) {
+            return false;
+        }
+
+        if ($visitor->hasPermission('character_profile', $anyPermission)) {
+            return true;
+        }
+
+        return (int)$visitor->user_id === (int)$profileUser->user_id
+            && $visitor->hasPermission('character_profile', $ownPermission);
     }
 }

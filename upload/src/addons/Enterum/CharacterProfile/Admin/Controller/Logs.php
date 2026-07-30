@@ -4,7 +4,7 @@
  * ACP: журнал действий (xf_char_profile_action_log).
  *
  * Доступ: admin permission characterProfile + (супер-админ / админ / viewLogs).
- * Только чтение; фильтры и пагинация. SQL через репозиторий (без entity JOIN).
+ * Просмотр, фильтры, пагинация и удаление выбранных записей.
  * Опция charProfileEnableActionLog влияет на запись, не на просмотр.
  */
 
@@ -143,6 +143,196 @@ class Logs extends AbstractController
             'hasActionLogTable' => $hasActionLogTable,
             'loggingEnabled' => (bool)$this->options()->charProfileEnableActionLog,
         ]);
+    }
+
+    /**
+     * ACP logs: POST — удалить выбранные записи журнала.
+     */
+    public function actionDelete(): AbstractReply
+    {
+        $this->assertPostOnly();
+
+        if (!$this->hasActionLogTable()) {
+            return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
+        }
+
+        $ids = $this->filter('delete', 'array-uint');
+        if (!$ids) {
+            return $this->error(\XF::phrase('enterum_char_profile_log_delete_none'));
+        }
+
+        /** @var \Enterum\CharacterProfile\Repository\CharProfileActionLog $repo */
+        $repo = $this->repository('Enterum\CharacterProfile:CharProfileActionLog');
+        $repo->deleteLogsByIds($ids);
+
+        $redirectParams = [
+            'type' => (string)$this->filter('type', 'str'),
+            'action' => (string)$this->filter('action', 'str'),
+            'target_user' => trim((string)$this->filter('target_user', 'str')),
+            'actor_user' => trim((string)$this->filter('actor_user', 'str')),
+            'date_from' => trim((string)$this->filter('date_from', 'str')),
+            'date_to' => trim((string)$this->filter('date_to', 'str')),
+            'sort' => $this->resolveSortKey((string)$this->filter('sort', 'str')),
+            'direction' => strtolower((string)$this->filter('direction', 'str')) === 'asc' ? 'asc' : 'desc',
+            'page' => max(1, (int)$this->filter('page', 'uint')),
+        ];
+
+        return $this->redirect($this->buildLink('character-profile/logs', null, $redirectParams));
+    }
+
+    /**
+     * ACP logs: POST — удалить все записи журнала.
+     */
+    public function actionDeleteAll(): AbstractReply
+    {
+        $this->assertPostOnly();
+
+        if (!$this->hasActionLogTable()) {
+            return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
+        }
+
+        if (!$this->filter('confirm', 'bool')) {
+            return $this->error(\XF::phrase('enterum_char_profile_log_delete_all_confirm_required'));
+        }
+
+        /** @var \Enterum\CharacterProfile\Repository\CharProfileActionLog $repo */
+        $repo = $this->repository('Enterum\CharacterProfile:CharProfileActionLog');
+        $repo->deleteAllLogs();
+
+        return $this->redirect($this->buildLink('character-profile/logs'));
+    }
+
+    /**
+     * ACP logs: GET — выгрузить журнал в CSV с учётом текущих фильтров.
+     */
+    public function actionExport(): AbstractReply
+    {
+        if (!$this->hasActionLogTable()) {
+            return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
+        }
+
+        $contentType = (string)$this->filter('type', 'str');
+        $allowedTypes = array_keys(\Enterum\CharacterProfile\Helper\ActionLogDisplay::getContentTypeTabs());
+        if (!in_array($contentType, $allowedTypes, true)) {
+            $contentType = '';
+        }
+
+        $filters = $this->buildExportFilters($contentType);
+        /** @var \Enterum\CharacterProfile\Repository\CharProfileActionLog $repo */
+        $repo = $this->repository('Enterum\CharacterProfile:CharProfileActionLog');
+        $rows = $repo->fetchLogsForExport($filters);
+
+        $csv = $this->buildExportCsv($rows);
+        $fileName = 'char_profile_logs_' . date('Y-m-d_His') . '.csv';
+
+        $this->app->response()->header('Content-Type', 'text/csv; charset=UTF-8');
+        $this->app->response()->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+
+        return $this->message($csv)->setResponseType('raw');
+    }
+
+    /**
+     * ACP logs: параметры фильтра для экспорта.
+     *
+     * @return array<string, mixed>
+     */
+    protected function buildExportFilters(string $contentType): array
+    {
+        $actionFilter = (string)$this->filter('action', 'str');
+        $targetUserFilter = trim((string)$this->filter('target_user', 'str'));
+        $actorUserFilter = trim((string)$this->filter('actor_user', 'str'));
+        $dateFromFilter = trim((string)$this->filter('date_from', 'str'));
+        $dateToFilter = trim((string)$this->filter('date_to', 'str'));
+        $sort = $this->resolveSortKey((string)$this->filter('sort', 'str'));
+        $direction = strtolower((string)$this->filter('direction', 'str')) === 'asc' ? 'asc' : 'desc';
+
+        $dateFromTs = 0;
+        if ($dateFromFilter !== '') {
+            $fromTs = strtotime($dateFromFilter . ' 00:00:00');
+            if ($fromTs !== false) {
+                $dateFromTs = (int)$fromTs;
+            }
+        }
+
+        $dateToTs = 0;
+        if ($dateToFilter !== '') {
+            $toTs = strtotime($dateToFilter . ' 23:59:59');
+            if ($toTs !== false) {
+                $dateToTs = (int)$toTs;
+            }
+        }
+
+        return [
+            'content_type' => $contentType,
+            'action' => $actionFilter,
+            'target_user' => $targetUserFilter,
+            'actor_user' => $actorUserFilter,
+            'date_from' => $dateFromTs,
+            'date_to' => $dateToTs,
+            'sort' => $sort,
+            'direction' => $direction,
+        ];
+    }
+
+    /**
+     * ACP logs: сформировать CSV-таблицу для экспорта.
+     *
+     * @param list<array<string, mixed>> $rows
+     */
+    protected function buildExportCsv(array $rows): string
+    {
+        $out = fopen('php://temp', 'r+');
+        if ($out === false) {
+            return '';
+        }
+
+        fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, [
+            'ID',
+            \XF::phrase('enterum_char_profile_log_col_date')->render(),
+            \XF::phrase('enterum_char_profile_log_col_target')->render(),
+            \XF::phrase('enterum_char_profile_log_col_actor')->render(),
+            \XF::phrase('enterum_char_profile_log_col_type')->render(),
+            \XF::phrase('enterum_char_profile_log_col_action')->render(),
+            \XF::phrase('enterum_char_profile_log_col_id')->render(),
+            \XF::phrase('enterum_char_profile_log_col_details')->render(),
+        ], ';');
+
+        foreach ($rows as $log) {
+            $oldData = !empty($log['old_data']) ? json_decode($log['old_data'], true) : null;
+            $newData = !empty($log['new_data']) ? json_decode($log['new_data'], true) : null;
+            $action = (string)$log['action'];
+            $actionLabel = $action;
+            if ($action === 'add') {
+                $actionLabel = (string)\XF::phrase('enterum_char_profile_log_action_add');
+            } elseif ($action === 'edit') {
+                $actionLabel = (string)\XF::phrase('enterum_char_profile_log_action_edit');
+            } elseif ($action === 'delete') {
+                $actionLabel = (string)\XF::phrase('enterum_char_profile_log_action_delete');
+            }
+
+            fputcsv($out, [
+                (int)$log['action_log_id'],
+                date('Y-m-d H:i:s', (int)$log['log_date']),
+                (string)($log['target_username'] ?? ''),
+                (string)($log['actor_username'] ?? ''),
+                (string)$log['content_type'],
+                $actionLabel,
+                (int)$log['content_id'],
+                strip_tags(\Enterum\CharacterProfile\Helper\ActionLogDisplay::formatDetails(
+                    (string)$log['content_type'],
+                    (string)$log['action'],
+                    is_array($oldData) ? $oldData : null,
+                    is_array($newData) ? $newData : null
+                )),
+            ], ';');
+        }
+
+        rewind($out);
+        $csv = stream_get_contents($out);
+        fclose($out);
+
+        return $csv !== false ? $csv : '';
     }
 
     /**

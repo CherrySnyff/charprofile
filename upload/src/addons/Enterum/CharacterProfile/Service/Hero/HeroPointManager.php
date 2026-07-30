@@ -136,7 +136,8 @@ class HeroPointManager extends AbstractService
      */
     public function addLog(User $profileUser, User $actor, array $input): CharProfileHeroLog
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
+        $this->assertLossWithinBalance($profileUser, $input);
 
         /** @var CharProfileHeroLog $log */
         $log = $this->em()->create('Enterum\CharacterProfile:CharProfileHeroLog');
@@ -158,10 +159,12 @@ class HeroPointManager extends AbstractService
         CharProfileHeroLog $log,
         array $input
     ): CharProfileHeroLog {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         if ((int)$log->user_id !== (int)$profileUser->user_id) {
             throw new \XF\PrintableException(\XF::phrase('requested_page_not_found'));
         }
+
+        $this->assertLossWithinBalance($profileUser, $input, $log);
 
         $old = $log->toArray();
         $this->applyInput($log, $profileUser, $actor, $input, false);
@@ -178,7 +181,7 @@ class HeroPointManager extends AbstractService
      */
     public function deleteLog(User $profileUser, User $actor, CharProfileHeroLog $log): void
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         if ((int)$log->user_id !== (int)$profileUser->user_id) {
             throw new \XF\PrintableException(\XF::phrase('requested_page_not_found'));
         }
@@ -316,6 +319,7 @@ class HeroPointManager extends AbstractService
             'source_url' => $log->source_url,
             'source_title' => $log->source_title,
             'is_support' => (bool)$log->is_support,
+            'is_overflow' => (bool)$log->is_overflow,
         ];
     }
 
@@ -352,13 +356,63 @@ class HeroPointManager extends AbstractService
     }
 
     /**
-     * ОГ / права: жёсткая проверка manageHero перед мутацией.
+     * ОГ: текущий баланс после хронологического пересчёта (опционально без одной записи).
      */
-    protected function assertCanManage(User $actor): void
+    public function getCurrentBalance(int $userId, ?int $excludeLogId = null): int
+    {
+        $max = $this->getHeroMax();
+        $logs = $this->repository('Enterum\CharacterProfile:CharProfileHeroLog')
+            ->findLogsForUserAsc($userId)
+            ->fetch();
+
+        $running = 0;
+        foreach ($logs as $log) {
+            if ($excludeLogId !== null && (int)$log->hero_log_id === $excludeLogId) {
+                continue;
+            }
+
+            $amount = abs((int)$log->amount);
+            $signed = $log->operation_type === 'loss' ? -$amount : $amount;
+            $running = max(0, min($max, $running + $signed));
+        }
+
+        return $running;
+    }
+
+    /**
+     * ОГ: запретить трату больше текущего баланса (ОГ не уходят в минус).
+     */
+    protected function assertLossWithinBalance(User $profileUser, array $input, ?CharProfileHeroLog $editingLog = null): void
+    {
+        $isSupport = !empty($input['is_support']);
+        $operation = (string)($input['operation_type'] ?? 'gain');
+        if ($isSupport) {
+            return;
+        }
+        if ($operation !== 'loss') {
+            return;
+        }
+
+        $amount = abs((int)($input['amount'] ?? 0));
+        if ($amount < 1) {
+            return;
+        }
+
+        $excludeId = $editingLog ? (int)$editingLog->hero_log_id : null;
+        $balance = $this->getCurrentBalance((int)$profileUser->user_id, $excludeId);
+        if ($amount > $balance) {
+            throw new \XF\PrintableException(\XF::phrase('enterum_char_profile_hero_loss_exceeds_balance'));
+        }
+    }
+
+    /**
+     * ОГ / права: manageHero или manageHeroOwn на своём профиле.
+     */
+    protected function assertCanManage(User $actor, User $profileUser): void
     {
         /** @var PermissionGuard $guard */
         $guard = $this->app->service('Enterum\CharacterProfile:PermissionGuard');
-        if (!$guard->canManageHero($actor)) {
+        if (!$guard->canManageHero($actor, $profileUser)) {
             throw new \XF\PrintableException(\XF::phrase('enterum_char_profile_no_permission'));
         }
     }

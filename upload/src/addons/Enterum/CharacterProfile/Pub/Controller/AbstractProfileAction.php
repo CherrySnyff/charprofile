@@ -91,10 +91,10 @@ abstract class AbstractProfileAction extends AbstractController
             'profile' => $profile,
             'tab' => $tab,
             'cpCharProfileTab' => $tab,
-            'canManageHero' => $guard->canManageHero($visitor),
+            'canManageHero' => $guard->canManageHero($visitor, $user),
             'canManageHeroSupport' => $guard->canManageHeroSupport($visitor),
-            'canManageReputation' => $guard->canManageReputation($visitor),
-            'canManageBackpack' => $guard->canManageBackpack($visitor),
+            'canManageReputation' => $guard->canManageReputation($visitor, $user),
+            'canManageBackpack' => $guard->canManageBackpack($visitor, $user),
             'canManageBackpackOther' => $guard->canManageBackpackOther($visitor, $user),
             'canManageCharacterSheet' => $guard->canManageCharacterSheet($visitor, $user),
         ];

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <permissions>
   <permission permission_group_id="character_profile" permission_id="view" permission_type="flag" interface_group_id="charProfile_general" display_order="10"/>
+  <permission permission_group_id="character_profile" permission_id="manageHeroOwn" permission_type="flag" interface_group_id="charProfile_general" display_order="15"/>
+  <permission permission_group_id="character_profile" permission_id="manageReputationOwn" permission_type="flag" interface_group_id="charProfile_general" display_order="18"/>
+  <permission permission_group_id="character_profile" permission_id="manageBackpackOwn" permission_type="flag" interface_group_id="charProfile_general" display_order="20"/>
   <permission permission_group_id="character_profile" permission_id="manageHero" permission_type="flag" interface_group_id="charProfile_management" display_order="20"/>
   <permission permission_group_id="character_profile" permission_id="manageHeroSupport" permission_type="flag" interface_group_id="charProfile_management" display_order="30"/>
   <permission permission_group_id="character_profile" permission_id="manageReputation" permission_type="flag" interface_group_id="charProfile_management" display_order="40"/>
   <permission permission_group_id="character_profile" permission_id="manageBackpack" permission_type="flag" interface_group_id="charProfile_management" display_order="50"/>
-  <permission permission_group_id="character_profile" permission_id="manageBackpackOwn" permission_type="flag" interface_group_id="charProfile_general" display_order="55"/>
   <permission permission_group_id="character_profile" permission_id="manageCharacterSheet" permission_type="flag" interface_group_id="charProfile_management" display_order="60"/>
   <permission permission_group_id="character_profile" permission_id="manageCharacterSheetOwn" permission_type="flag" interface_group_id="charProfile_general" display_order="70"/>
   <permission permission_group_id="character_profile" permission_id="viewLogs" permission_type="flag" interface_group_id="charProfile_management" display_order="80"/>

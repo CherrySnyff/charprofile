@@ -83,7 +83,7 @@ class ActivityItemManager extends AbstractService
      */
     public function addItem(User $profileUser, User $actor, array $input): CharProfileBackpackActivityItem
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
 
         /** @var CharProfileBackpackActivityItem $item */
         $item = $this->em()->create('Enterum\CharacterProfile:CharProfileBackpackActivityItem');
@@ -104,7 +104,7 @@ class ActivityItemManager extends AbstractService
         CharProfileBackpackActivityItem $item,
         array $input
     ): CharProfileBackpackActivityItem {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         $this->assertItemOwner($profileUser, $item);
 
         $old = $item->toArray();
@@ -121,7 +121,7 @@ class ActivityItemManager extends AbstractService
      */
     public function deleteItem(User $profileUser, User $actor, CharProfileBackpackActivityItem $item): void
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         $this->assertItemOwner($profileUser, $item);
 
         $old = $item->toArray();
@@ -173,13 +173,13 @@ class ActivityItemManager extends AbstractService
     }
 
     /**
-     * Рюкзак / права: жёсткая проверка manageBackpack.
+     * Рюкзак / права: manageBackpack или manageBackpackOwn на своём профиле.
      */
-    protected function assertCanManage(User $actor): void
+    protected function assertCanManage(User $actor, User $profileUser): void
     {
         /** @var PermissionGuard $guard */
         $guard = $this->app->service('Enterum\CharacterProfile:PermissionGuard');
-        if (!$guard->canManageBackpack($actor)) {
+        if (!$guard->canManageBackpack($actor, $profileUser)) {
             throw new \XF\PrintableException(\XF::phrase('enterum_char_profile_no_permission'));
         }
     }

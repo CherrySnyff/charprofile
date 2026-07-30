@@ -2,7 +2,7 @@
 
 /**
  * Рюкзак / crafted: GET JSON автодополнение @ника для поля «Автор».
- * Маршрут members/backpack_find_users; доступ только с manageBackpack; минимум 2 символа.
+ * Маршрут members/backpack_find_users; доступ при manageBackpack или manageBackpackOwn на своём профиле.
  */
 
 namespace Enterum\CharacterProfile\Pub\Controller;
@@ -17,10 +17,10 @@ class BackpackFindUsers extends AbstractProfileAction
      */
     public function actionIndex(ParameterBag $params): AbstractReply
     {
-        $this->loadProfileUser($params);
+        $user = $this->loadProfileUser($params);
         $visitor = \XF::visitor();
 
-        if (!$this->getPermissionGuard()->canManageBackpack($visitor)) {
+        if (!$this->getPermissionGuard()->canManageBackpack($visitor, $user)) {
             return $this->noPermission();
         }
 

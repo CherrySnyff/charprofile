@@ -81,15 +81,25 @@ class CraftedItemManager extends AbstractService
             return null;
         }
 
-        /** @var \XF\Entity\User|null $user */
-        $user = $this->em()->findOne('XF:User', ['username' => $lookup]);
-        if ($user) {
-            return $user;
-        }
+        try {
+            /** @var \XF\Entity\User|null $user */
+            $user = $this->em()->findOne('XF:User', ['username' => $lookup]);
+            if ($user) {
+                return $user;
+            }
 
-        return $this->finder('XF:User')
-            ->whereSql('LOWER(username) = LOWER(?)', [$lookup])
-            ->fetchOne();
+            $userId = $this->db()->fetchOne(
+                'SELECT user_id FROM xf_user WHERE LOWER(username) = LOWER(?) LIMIT 1',
+                [$lookup]
+            );
+            if (!$userId) {
+                return null;
+            }
+
+            return $this->em()->find('XF:User', (int)$userId);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**
@@ -97,11 +107,12 @@ class CraftedItemManager extends AbstractService
      */
     public function addItem(User $profileUser, User $actor, array $input): CharProfileBackpackCraftedItem
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
 
         /** @var CharProfileBackpackCraftedItem $item */
         $item = $this->em()->create('Enterum\CharacterProfile:CharProfileBackpackCraftedItem');
         $this->applyInput($item, $profileUser, $actor, $input, true);
+        $this->assertAuthorUserExists((string)$item->author_name);
         $item->save();
 
         $this->logAction('backpack_crafted', 'add', $profileUser->user_id, $actor->user_id, $item->crafted_item_id, null, $item->toArray());
@@ -118,11 +129,12 @@ class CraftedItemManager extends AbstractService
         CharProfileBackpackCraftedItem $item,
         array $input
     ): CharProfileBackpackCraftedItem {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         $this->assertItemOwner($profileUser, $item);
 
         $old = $item->toArray();
         $this->applyInput($item, $profileUser, $actor, $input, false);
+        $this->assertAuthorUserExists((string)$item->author_name);
         $item->save();
 
         $this->logAction('backpack_crafted', 'edit', $profileUser->user_id, $actor->user_id, $item->crafted_item_id, $old, $item->toArray());
@@ -135,7 +147,7 @@ class CraftedItemManager extends AbstractService
      */
     public function deleteItem(User $profileUser, User $actor, CharProfileBackpackCraftedItem $item): void
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         $this->assertItemOwner($profileUser, $item);
 
         $old = $item->toArray();
@@ -175,6 +187,16 @@ class CraftedItemManager extends AbstractService
     }
 
     /**
+     * Рюкзак / crafted: автор должен соответствовать существующему пользователю форума.
+     */
+    protected function assertAuthorUserExists(string $authorName): void
+    {
+        if (!$this->findAuthorUser($authorName)) {
+            throw new \XF\PrintableException(\XF::phrase('enterum_char_profile_bp_author_invalid'));
+        }
+    }
+
+    /**
      * Рюкзак / crafted: предмет должен принадлежать владельцу профиля из URL.
      */
     protected function assertItemOwner(User $profileUser, CharProfileBackpackCraftedItem $item): void
@@ -185,13 +207,13 @@ class CraftedItemManager extends AbstractService
     }
 
     /**
-     * Рюкзак / права: жёсткая проверка manageBackpack.
+     * Рюкзак / права: manageBackpack или manageBackpackOwn на своём профиле.
      */
-    protected function assertCanManage(User $actor): void
+    protected function assertCanManage(User $actor, User $profileUser): void
     {
         /** @var PermissionGuard $guard */
         $guard = $this->app->service('Enterum\CharacterProfile:PermissionGuard');
-        if (!$guard->canManageBackpack($actor)) {
+        if (!$guard->canManageBackpack($actor, $profileUser)) {
             throw new \XF\PrintableException(\XF::phrase('enterum_char_profile_no_permission'));
         }
     }

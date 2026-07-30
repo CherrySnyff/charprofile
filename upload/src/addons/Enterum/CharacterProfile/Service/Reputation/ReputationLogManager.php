@@ -67,7 +67,7 @@ class ReputationLogManager extends AbstractService
      */
     public function addLog(User $profileUser, User $actor, array $input): CharProfileReputationLog
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         $this->assertAmountColumnSupportsNegative();
 
         $amount = (int)($input['reputation_amount'] ?? 0);
@@ -94,7 +94,7 @@ class ReputationLogManager extends AbstractService
         CharProfileReputationLog $log,
         array $input
     ): CharProfileReputationLog {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         if ((int)$log->user_id !== (int)$profileUser->user_id) {
             throw new \XF\PrintableException(\XF::phrase('requested_page_not_found'));
         }
@@ -120,7 +120,7 @@ class ReputationLogManager extends AbstractService
      */
     public function deleteLog(User $profileUser, User $actor, CharProfileReputationLog $log): void
     {
-        $this->assertCanManage($actor);
+        $this->assertCanManage($actor, $profileUser);
         if ((int)$log->user_id !== (int)$profileUser->user_id) {
             throw new \XF\PrintableException(\XF::phrase('requested_page_not_found'));
         }
@@ -163,13 +163,13 @@ class ReputationLogManager extends AbstractService
     }
 
     /**
-     * Репутация / права: жёсткая проверка manageReputation.
+     * Репутация / права: manageReputation или manageReputationOwn на своём профиле.
      */
-    protected function assertCanManage(User $actor): void
+    protected function assertCanManage(User $actor, User $profileUser): void
     {
         /** @var PermissionGuard $guard */
         $guard = $this->app->service('Enterum\CharacterProfile:PermissionGuard');
-        if (!$guard->canManageReputation($actor)) {
+        if (!$guard->canManageReputation($actor, $profileUser)) {
             throw new \XF\PrintableException(\XF::phrase('enterum_char_profile_no_permission'));
         }
     }

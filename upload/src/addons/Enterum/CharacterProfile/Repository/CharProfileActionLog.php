@@ -53,6 +53,48 @@ class CharProfileActionLog extends Repository
         ];
     }
 
+    public function deleteLogsByIds(array $ids): int
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        if (!$ids) {
+            return 0;
+        }
+
+        return $this->db()->delete(
+            'xf_char_profile_action_log',
+            'action_log_id IN (' . $this->db()->quote($ids) . ')'
+        );
+    }
+
+    public function deleteAllLogs(): int
+    {
+        return (int)$this->db()->delete('xf_char_profile_action_log', '1=1');
+    }
+
+    /**
+     * ACP logs: все записи по фильтрам (без пагинации) для экспорта.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function fetchLogsForExport(array $filters): array
+    {
+        $db = $this->db();
+        [$whereSql, $whereParams] = $this->buildAdminFiltersSql($filters);
+        $orderBy = $this->buildAdminOrderBy($filters);
+
+        $rows = $db->fetchAll(
+            'SELECT l.*, target.username AS target_username, actor.username AS actor_username
+             FROM xf_char_profile_action_log AS l
+             LEFT JOIN xf_user AS target ON (target.user_id = l.target_user_id)
+             LEFT JOIN xf_user AS actor ON (actor.user_id = l.actor_user_id)'
+            . $whereSql
+            . ' ORDER BY ' . $orderBy,
+            $whereParams
+        );
+
+        return $rows ?: [];
+    }
+
     /**
      * ACP logs: WHERE по типу, действию, никам и диапазону дат.
      *

@@ -13,7 +13,7 @@
 	</h2>
 </xf:if>]]></template>
 
-  <template type="public" title="enterum_char_profile_reputation" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
+  <template type="public" title="enterum_char_profile_reputation" version_id="1000076" version_string="1.0.6"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
 
 <xf:css src="enterum_char_profile.less" />
 
@@ -29,6 +29,7 @@
 						<xf:foreach loop="range(1, 3)" value="$i">
 							<i class="fa-{{ $i <= $profile.hero_points_cache ? 'solid' : 'regular' }} fa-circle cp-heroDot cp-heroDot--{{ $i <= $profile.hero_points_cache ? 'filled' : 'empty' }}"></i>
 						</xf:foreach>
+						<span class="cp-heroDotsHelp" data-cp-tooltip="{{ phrase('enterum_char_profile_hero_reroll_tooltip') }}" title="{{ phrase('enterum_char_profile_hero_reroll_tooltip') }}"><xf:fa icon="fa-circle-question" /></span>
 					</span>
 				</div>
 				<hr class="cp-heroDivider" />
@@ -66,6 +67,9 @@
 										<div class="{$entry.cssClass}">
 											<div class="cp-heroLogLine">
 												<span class="cp-heroLogText">{$entry.labelHtml|raw}</span>
+												<xf:if is="$entry.is_overflow">
+													<span class="cp-heroOverflowIcon" data-cp-tooltip="{{ phrase('enterum_char_profile_hero_overflow_tooltip') }}" title="{{ phrase('enterum_char_profile_hero_overflow_tooltip') }}"><xf:fa icon="fa-circle-info" /></span>
+												</xf:if>
 												<xf:if is="$canManageHero">
 													<details class="cp-heroLogEdit">
 														<summary title="Редактировать"><xf:fa icon="edit" /></summary>
@@ -140,11 +144,16 @@
 					<div class="cp-rep-faction-list">
 						<xf:if is="$factionRows is not empty">
 							<xf:foreach loop="$factionRows" value="$fr">
-								<details class="cp-rep-faction-spoiler">
+								<details class="cp-rep-faction-spoiler<xf:if is="$fr.total < 0"> cp-rep-faction-spoiler--negative</xf:if>">
 									<summary>
 										<span class="cp-rep-faction-name">{$fr.display_name}</span>
 										<span class="cp-rep-faction-total">{$fr.total|number}</span>
-										<span class="cp-rep-faction-relation"><span class="cp-relation-pill cp-relation-pill--{$fr.relation_class}" data-cp-tooltip="{$fr.relation_tooltip}">{$fr.relation}</span></span>
+										<span class="cp-rep-faction-relation">
+											<span class="cp-relation-pill cp-relation-pill--{$fr.relation_class}" data-cp-tooltip="{$fr.relation_tooltip}">{$fr.relation}</span>
+											<xf:if is="$fr.show_quest_footnote">
+												<span class="cp-rep-questFootnote" data-cp-tooltip="{{ phrase('enterum_char_profile_rep_quest_footnote') }}" title="{{ phrase('enterum_char_profile_rep_quest_footnote') }}">*</span>
+											</xf:if>
+										</span>
 									</summary>
 									<div class="cp-rep-faction-items">
 										<xf:if is="$fr.entries is not empty">
@@ -214,6 +223,39 @@
 					</xf:if>
 				</div>
 			</div>
+
+			<script>
+			(function () {
+				var heroBalance = {$profile.hero_points_cache|json};
+				var lossMsg = {{ phrase('enterum_char_profile_hero_loss_exceeds_balance')|json }};
+
+				function bindHeroLossGuard(root) {
+					if (!root) return;
+					root.querySelectorAll('.cp-heroAddRow, .cp-heroLogEditForm').forEach(function (form) {
+						if (form.dataset.cpHeroLossGuard) return;
+						form.dataset.cpHeroLossGuard = '1';
+						form.addEventListener('submit', function (e) {
+							var op = form.querySelector('[name="operation_type"]');
+							var support = form.querySelector('[name="is_support"]');
+							if (support && support.checked) return;
+							if (!op || op.value !== 'loss') return;
+							var amountInput = form.querySelector('[name="amount"]');
+							var amount = parseInt(amountInput && amountInput.value, 10) || 0;
+							if (amount > heroBalance) {
+								e.preventDefault();
+								if (window.XF && XF.alert) {
+									XF.alert(lossMsg);
+								} else {
+									window.alert(lossMsg);
+								}
+							}
+						});
+					});
+				}
+
+				bindHeroLossGuard(document);
+			})();
+			</script>
 
 			<script>
 			(function () {
@@ -288,7 +330,7 @@
 
 				document.addEventListener('mouseover', function (evt) {
 					var trigger = evt.target && evt.target.closest
-						? evt.target.closest('.cp-relation-pill[data-cp-tooltip]')
+						? evt.target.closest('[data-cp-tooltip]')
 						: null;
 					if (!trigger) return;
 					activeTrigger = trigger;
@@ -316,7 +358,7 @@
 	</div>
 </div>]]></template>
 
-  <template type="public" title="enterum_char_profile_backpack" version_id="1000072" version_string="1.0.2"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_backpack') }} - {$user.username}</xf:title>
+  <template type="public" title="enterum_char_profile_backpack" version_id="1000074" version_string="1.0.4"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_backpack') }} - {$user.username}</xf:title>
 
 <xf:css src="enterum_char_profile.less" />
 
@@ -642,6 +684,14 @@
 	}
 
 	document.querySelectorAll('.cp-author-search').forEach(bindAuthorSearch);
+
+	document.querySelectorAll('.cp-add-row').forEach(function (form) {
+		form.addEventListener('keydown', function (e) {
+			if (e.key !== 'Enter') return;
+			if (e.target && e.target.tagName === 'BUTTON') return;
+			e.preventDefault();
+		});
+	});
 })();
 </script>
 </xf:if>
@@ -686,7 +736,7 @@
 	</div>
 </div>]]></template>
 
-  <template type="admin" title="enterum_char_profile_acp_logs" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('admin_navigation.enterum_char_profile_logs') }}</xf:title>
+  <template type="admin" title="enterum_char_profile_acp_logs" version_id="1000076" version_string="1.0.6"><![CDATA[<xf:title>{{ phrase('admin_navigation.enterum_char_profile_logs') }}</xf:title>
 
 <xf:css src="enterum_char_profile_acp.less" />
 
@@ -746,6 +796,7 @@
 				<div>
 					<button type="submit" class="button button--primary">{{ phrase('enterum_char_profile_log_filter_submit') }}</button>
 					<a href="{{ link('character-profile/logs', null, {'type': $filterType}) }}" class="button">{{ phrase('enterum_char_profile_log_filter_reset') }}</a>
+					<a href="{{ link('character-profile/logs/export', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': $sort, 'direction': $direction}) }}" class="button">{{ phrase('enterum_char_profile_log_export') }}</a>
 				</div>
 			</div>
 		</div>
@@ -753,11 +804,14 @@
 </xf:form>
 
 <xf:if is="$rows is not empty">
-	<div class="block cp-acpLogs">
+	<xf:form action="{{ link('character-profile/logs/delete') }}" class="block cp-acpLogs">
 		<div class="block-container">
 			<div class="block-body">
 				<xf:datalist>
 					<xf:datarow rowclass="dataList-row--header">
+						<xf:cell class="dataList-cell--min">
+							<xf:checkbox standalone="true" check-all=".js-logSelect" />
+						</xf:cell>
 						<xf:cell class="dataList-cell--min">
 							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'date', 'direction': ($sort == 'date' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_date') }}</a>
 						</xf:cell>
@@ -778,6 +832,9 @@
 					<xf:foreach loop="$rows" value="$row">
 						<xf:datarow>
 							<xf:cell class="dataList-cell--min">
+								<xf:checkbox name="delete[]" value="{$row.action_log_id}" class="js-logSelect" />
+							</xf:cell>
+							<xf:cell class="dataList-cell--min">
 								<xf:date time="{$row.log_date}" />
 							</xf:cell>
 							<xf:cell class="dataList-cell--min">{$row.target_username|default('—')}</xf:cell>
@@ -795,8 +852,32 @@
 					</xf:foreach>
 				</xf:datalist>
 			</div>
+			<div class="block-footer block-footer--split">
+				<span class="block-footer-counter"></span>
+				<span class="block-footer-controls">
+					<input type="hidden" name="type" value="{$filterType}" />
+					<input type="hidden" name="action" value="{$filterAction}" />
+					<input type="hidden" name="target_user" value="{$filterTargetUser}" />
+					<input type="hidden" name="actor_user" value="{$filterActorUser}" />
+					<input type="hidden" name="date_from" value="{$filterDateFrom}" />
+					<input type="hidden" name="date_to" value="{$filterDateTo}" />
+					<input type="hidden" name="sort" value="{$sort}" />
+					<input type="hidden" name="direction" value="{$direction}" />
+					<input type="hidden" name="page" value="{$page}" />
+					<button type="submit" class="button button--primary">{{ phrase('enterum_char_profile_log_delete_selected') }}</button>
+				</span>
+			</div>
 		</div>
-	</div>
+	</xf:form>
+
+	<xf:form action="{{ link('character-profile/logs/delete-all') }}" class="block" style="margin-bottom: 10px;">
+		<div class="block-container">
+			<div class="block-body block-row">
+				<input type="hidden" name="confirm" value="1" />
+				<button type="submit" class="button button--cta" onclick="return confirm({{ phrase('enterum_char_profile_log_delete_all_confirm')|json }});">{{ phrase('enterum_char_profile_log_delete_all') }}</button>
+			</div>
+		</div>
+	</xf:form>
 
 	<xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="character-profile/logs" params="{$filterParams}" wrapperclass="block-outer block-outer--after" />
 <xf:else />
@@ -813,7 +894,7 @@
 }
 ]]></template>
 
-  <template type="public" title="enterum_char_profile.less" version_id="1000073" version_string="1.0.3"><![CDATA[.cp-tabs,
+  <template type="public" title="enterum_char_profile.less" version_id="1000076" version_string="1.0.6"><![CDATA[.cp-tabs,
 .cp-subTabs {
 	margin-bottom: 12px;
 }
@@ -854,6 +935,19 @@
 .cp-heroDot--empty {
 	color: #dd5000;
 	opacity: 0.35;
+}
+
+.cp-heroDotsHelp,
+.cp-heroOverflowIcon {
+	margin-left: 6px;
+	color: #dd5000;
+	cursor: help;
+	font-size: 16px;
+	vertical-align: middle;
+}
+
+.cp-heroOverflowIcon {
+	color: #dd5000;
 }
 
 .cp-heroDivider {
@@ -1214,6 +1308,17 @@
 	text-align: center;
 }
 
+.cp-rep-faction-spoiler--negative > summary {
+	color: rgb(245, 0, 0);
+}
+
+.cp-rep-questFootnote {
+	margin-left: 4px;
+	color: @xf-textColorMuted;
+	cursor: help;
+	font-weight: 700;
+}
+
 .cp-rep-faction-items {
 	padding: 4px 0 8px 24px;
 }
@@ -1291,7 +1396,36 @@
 
 .cp-rep-editForm {
 	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 	margin-top: 8px;
+	box-sizing: border-box;
+}
+
+.cp-rep-editForm .cp-rep-addFields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+	gap: 8px;
+	align-items: end;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	margin: 0;
+	justify-content: stretch;
+}
+
+.cp-rep-editForm .cp-rep-addField {
+	min-width: 0;
+	max-width: none;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.cp-rep-editForm .cp-rep-addField .input,
+.cp-rep-editForm .cp-rep-addField select {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
 }
 
 .cp-rep-addForm {
@@ -1374,7 +1508,7 @@
 	background: @xf-contentBg;
 	color: @xf-textColor;
 	line-height: 1.35;
-	white-space: normal;
+	white-space: pre-line;
 	word-break: break-word;
 	pointer-events: none;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
@@ -1828,6 +1962,31 @@
 	.cp-rep-faction-spoiler > summary {
 		width: 100%;
 		grid-template-columns: 1fr;
+	}
+
+	.cp-rep-entryLine {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.cp-rep-entryActions {
+		align-self: flex-end;
+	}
+
+	.cp-rep-editForm .cp-rep-addFields,
+	.cp-rep-addForm .cp-rep-addFields {
+		display: grid;
+		grid-template-columns: 1fr;
+	}
+
+	.cp-rep-addField,
+	.cp-rep-addField--biome,
+	.cp-rep-addField--qty,
+	.cp-rep-addField--url {
+		flex: 1 1 auto;
+		max-width: none;
+		min-width: 0;
+		width: 100%;
 	}
 
 	.cp-backpack-block {

@@ -85,7 +85,7 @@ class CharProfileReputationLog extends Repository
                 'label' => $label,
                 'negative' => $neg,
                 'positive' => $pos,
-                'total' => abs($neg) + $pos,
+                'total' => $pos + $neg,
             ];
         }
 
@@ -124,6 +124,7 @@ class CharProfileReputationLog extends Repository
                 'relation' => mb_strtoupper(ReputationDisplay::relationLabel($total)),
                 'relation_class' => $relationClass,
                 'relation_tooltip' => ReputationDisplay::relationTooltipByClass($relationClass),
+                'show_quest_footnote' => $total >= 70,
             ];
         }
 

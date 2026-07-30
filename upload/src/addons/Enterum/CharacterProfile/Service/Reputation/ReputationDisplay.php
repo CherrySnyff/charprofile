@@ -35,11 +35,11 @@ class ReputationDisplay
         if ($sum >= 40 && $sum <= 69) {
             return 'promising';
         }
-        if ($sum >= 70 && $sum <= 99) {
-            return 'hero';
+        if ($sum >= 70) {
+            return $sum >= 100 ? 'legend' : 'hero';
         }
 
-        return 'legend';
+        return 'neutral';
     }
 
     /**
@@ -68,11 +68,14 @@ class ReputationDisplay
         if ($sum >= 40 && $sum <= 69) {
             return 'Подающий надежды';
         }
-        if ($sum >= 70 && $sum <= 99) {
+        if ($sum >= 100) {
+            return 'Легенда';
+        }
+        if ($sum >= 70) {
             return 'Герой';
         }
 
-        return 'Легенда';
+        return 'Нейтральный';
     }
 
     /**
