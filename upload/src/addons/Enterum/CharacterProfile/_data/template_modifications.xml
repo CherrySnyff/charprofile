@@ -24,6 +24,32 @@
     <find><![CDATA[#(<div class="message-userExtras">\s*<xf:contentcheck>)(.*?)(</xf:contentcheck>\s*</div>)#s]]></find>
     <replace><![CDATA[$1$2
 					<xf:include template="enterum_char_profile_message_hero" />
+					<xf:include template="enterum_char_profile_member_links" />
 				$3]]></replace>
+  </modification>
+  <modification type="public" template="member_view" modification_key="enterum_cp_member_char_links" description="Ensure reputation/backpack links in charfieldslinks overlay" execution_order="60" enabled="1" action="str_replace">
+    <find><![CDATA[<div class="memberHeader">]]></find>
+    <replace><![CDATA[<xf:include template="enterum_char_profile_member_links" />
+<div class="memberHeader">]]></replace>
+  </modification>
+  <modification type="public" template="account_details" modification_key="enterum_cp_account_char_links" description="Show read-only reputation/backpack fields on account details" execution_order="50" enabled="1" action="preg_replace">
+    <find><![CDATA[/(<xf:macro[^>]*(?:name="custom_fields_edit"|id="custom_fields_macros::custom_fields_edit")[^>]*arg-group="contact"[^>]*\/?>)/s]]></find>
+    <replace><![CDATA[$1
+				<xf:include template="enterum_char_profile_account_links" />]]></replace>
+  </modification>
+  <modification type="public" template="member_tooltip" modification_key="enterum_cp_member_tooltip_links" description="Reputation/backpack buttons in member tooltip actions" execution_order="60" enabled="1" action="str_replace">
+    <find><![CDATA[<div class="memberTooltip-actions">]]></find>
+    <replace><![CDATA[<xf:include template="enterum_char_profile_tooltip_links" />
+			<div class="memberTooltip-actions">]]></replace>
+  </modification>
+  <modification type="public" template="account_visitor_menu" modification_key="enterum_cp_account_menu_links" description="Reputation/backpack links before news feed in visitor menu" execution_order="50" enabled="1" action="preg_replace">
+    <find><![CDATA[/(<li>\s*<a[^>]*href="\{\{\s*link\('whats-new\/news-feed'\)[^"]*"\}\}"[^>]*>)/s]]></find>
+    <replace><![CDATA[<xf:include template="enterum_char_profile_account_menu_links" />
+				$1]]></replace>
+  </modification>
+  <modification type="public" template="PAGE_CONTAINER" modification_key="enterum_cp_account_menu_fallback" description="Fallback JS injector for reputation/backpack in visitor menu" execution_order="999" enabled="1" action="str_replace">
+    <find><![CDATA[</body>]]></find>
+    <replace><![CDATA[<xf:include template="enterum_char_profile_account_menu_fallback" />
+</body>]]></replace>
   </modification>
 </template_modifications>

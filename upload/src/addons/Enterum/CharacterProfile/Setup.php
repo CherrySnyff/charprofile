@@ -47,6 +47,17 @@ class Setup extends AbstractSetup
     }
 
     /**
+     * Установка, шаг 3: кастомные поля Репутация/Рюкзак + URL у принятых игроков.
+     */
+    public function installStep3(): void
+    {
+        /** @var \Enterum\CharacterProfile\Service\ProfilePageLinks $links */
+        $links = $this->app()->service('Enterum\CharacterProfile:ProfilePageLinks');
+        $links->ensureFieldDefinitions();
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
      * Setup / опции: ID группы-триггера из xf_option (или 16 по умолчанию).
      * Во время installStep2 кэш опций аддона ещё может быть пуст — читаем БД напрямую.
      */
@@ -121,6 +132,106 @@ class Setup extends AbstractSetup
     public function upgrade24Step1(): void
     {
         BackpackOtherSchema::ensureColumns($this->app());
+    }
+
+    /**
+     * Upgrade 1.0.12: проставить ссылки Репутация/Рюкзак в charfieldslinks у принятых игроков.
+     */
+    public function upgrade1000082Step1(): void
+    {
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
+     * Upgrade 1.0.13: создать кастомные поля Репутация/Рюкзак и заполнить URL.
+     */
+    public function upgrade1000083Step1(): void
+    {
+        /** @var \Enterum\CharacterProfile\Service\ProfilePageLinks $links */
+        $links = $this->app()->service('Enterum\CharacterProfile:ProfilePageLinks');
+        $links->ensureFieldDefinitions();
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
+     * Upgrade 1.0.14: поля через XF Entity (без колонок match_regex — XF 2.3).
+     */
+    public function upgrade1000084Step1(): void
+    {
+        /** @var \Enterum\CharacterProfile\Service\ProfilePageLinks $links */
+        $links = $this->app()->service('Enterum\CharacterProfile:ProfilePageLinks');
+        $links->ensureFieldDefinitions();
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
+     * Upgrade 1.0.15: скрыть сырые URL в сайдбаре сообщения; ссылки — в «Анкета».
+     */
+    public function upgrade1000085Step1(): void
+    {
+        /** @var \Enterum\CharacterProfile\Service\ProfilePageLinks $links */
+        $links = $this->app()->service('Enterum\CharacterProfile:ProfilePageLinks');
+        $links->ensureFieldDefinitions();
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
+     * Upgrade 1.0.16: поля только у группы-триггера; кнопки в tooltip/меню.
+     */
+    public function upgrade1000086Step1(): void
+    {
+        /** @var \Enterum\CharacterProfile\Service\ProfilePageLinks $links */
+        $links = $this->app()->service('Enterum\CharacterProfile:ProfilePageLinks');
+        $links->ensureFieldDefinitions();
+        $links->clearLinksForNonTriggerUsers();
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
+     * Upgrade 1.0.17: исправление синтаксиса шаблона репутации (убрана подсказка ОГ).
+     */
+    public function upgrade1000087Step1(): void
+    {
+        /** @var \Enterum\CharacterProfile\Service\ProfilePageLinks $links */
+        $links = $this->app()->service('Enterum\CharacterProfile:ProfilePageLinks');
+        $links->ensureFieldDefinitions();
+        $links->clearLinksForNonTriggerUsers();
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
+     * Upgrade 1.0.18: ссылки Репутация/Рюкзак в меню аккаунта (visitor menu).
+     */
+    public function upgrade1000088Step1(): void
+    {
+        // Только синхронизация данных; шаблоны подтянутся при обновлении аддона.
+        $this->syncAcceptedUserProfileLinks();
+    }
+
+    /**
+     * Upgrade 1.0.19: опция «отнимать отрицательную репутацию от общей».
+     */
+    public function upgrade1000089Step1(): void
+    {
+        // Опция импортируется из options.xml; пересчёт live при открытии профилей.
+    }
+
+    protected function syncAcceptedUserProfileLinks(): void
+    {
+        $groupId = $this->resolveAcceptedGroupId();
+        if ($groupId <= 0) {
+            return;
+        }
+
+        /** @var ProfileInitializer $initializer */
+        $initializer = $this->app()->service('Enterum\CharacterProfile:ProfileInitializer');
+        $userIds = $this->db()->fetchAllColumn(
+            'SELECT user_id FROM xf_user WHERE user_group_id = ? OR FIND_IN_SET(?, secondary_group_ids)',
+            [$groupId, $groupId]
+        );
+        foreach ($userIds as $userId) {
+            $initializer->syncProfilePageLinks((int)$userId);
+        }
     }
 
     /**

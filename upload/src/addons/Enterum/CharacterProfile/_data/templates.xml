@@ -19,6 +19,303 @@
 	</dl>
 </xf:if>]]></template>
 
+  <template type="public" title="enterum_char_profile_member_links" version_id="1000085" version_string="1.0.15"><![CDATA[<xf:if is="$user.canViewCharacterProfileTabs()">
+	<span class="cp-profile-link-seed" hidden="hidden"
+		data-rep-url="{{ link('members/reputation', $user) }}"
+		data-bp-url="{{ link('members/backpack', $user) }}"
+		data-rep-title="{{ phrase('enterum_char_profile_tab_reputation') }}"
+		data-bp-title="{{ phrase('enterum_char_profile_tab_backpack') }}"></span>
+	<script>
+	(function () {
+		function findAbout(scope) {
+			return scope.querySelector('.about_char_link, .firstbuttoncontent.about_char_link, .about_char_link .charfieldslinks')
+				|| scope.querySelector('[class*="about_char"]');
+		}
+
+		function findOrCreateRoot(scope) {
+			var root = scope.querySelector('.about_char_link .charfieldslinks')
+				|| scope.querySelector('.charfieldslinks');
+			if (root) return root;
+
+			var about = findAbout(scope);
+			if (!about) return null;
+			if (about.classList && about.classList.contains('charfieldslinks')) {
+				return about;
+			}
+
+			root = document.createElement('div');
+			root.className = 'charfieldslinks';
+			var klass = null;
+			var nodes = about.querySelectorAll ? about.querySelectorAll('b, strong') : [];
+			for (var i = 0; i < nodes.length; i++) {
+				if (/Класс/i.test(nodes[i].textContent || '')) {
+					klass = nodes[i];
+					break;
+				}
+			}
+			if (!klass) {
+				for (var j = 0; j < about.childNodes.length; j++) {
+					var n = about.childNodes[j];
+					if (n.nodeType === 1 && (n.tagName === 'B' || n.tagName === 'STRONG') && /Класс/i.test(n.textContent || '')) {
+						klass = n;
+						break;
+					}
+				}
+			}
+			if (klass) {
+				about.insertBefore(root, klass);
+			} else {
+				about.appendChild(root);
+			}
+			return root;
+		}
+
+		function ensureLink(root, key, href, title) {
+			if (!root || !href || !title) return;
+			if (root.querySelector('a[data-cp-profile-link="' + key + '"]')) return;
+			var exists = false;
+			root.querySelectorAll('a').forEach(function (a) {
+				var t = (a.getAttribute('title') || a.textContent || '').trim();
+				if (t === title) exists = true;
+			});
+			if (exists) return;
+			if (root.innerHTML && !/<br\s*\/?>\s*$/i.test(root.innerHTML)) {
+				root.appendChild(document.createElement('br'));
+			}
+			var a = document.createElement('a');
+			a.href = href;
+			a.title = title;
+			a.setAttribute('data-cp-profile-link', key);
+			a.textContent = title;
+			root.appendChild(a);
+			root.appendChild(document.createElement('br'));
+		}
+
+		function injectSeed(seed) {
+			if (!seed) return;
+
+			var scope = seed.closest('.message')
+				|| seed.closest('.message-userDetails')
+				|| seed.closest('.memberHeader')
+				|| seed.closest('.block-container')
+				|| document;
+
+			var root = findOrCreateRoot(scope);
+			if (!root && scope !== document) {
+				root = findOrCreateRoot(document);
+			}
+			if (!root) return;
+
+			ensureLink(root, 'reputation', seed.getAttribute('data-rep-url'), seed.getAttribute('data-rep-title'));
+			ensureLink(root, 'backpack', seed.getAttribute('data-bp-url'), seed.getAttribute('data-bp-title'));
+			seed.setAttribute('data-cp-done', '1');
+		}
+
+		function run() {
+			document.querySelectorAll('.cp-profile-link-seed').forEach(injectSeed);
+		}
+
+		run();
+		document.addEventListener('DOMContentLoaded', run);
+		document.addEventListener('click', function () {
+			window.setTimeout(run, 50);
+		}, true);
+	})();
+	</script>
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_account_links" version_id="1000086" version_string="1.0.16"><![CDATA[<xf:if is="$xf.visitor.canViewCharacterProfileTabs()">
+	<xf:set var="$repUrl">{{ link('canonical:members/reputation', $xf.visitor) }}</xf:set>
+	<xf:set var="$bpUrl">{{ link('canonical:members/backpack', $xf.visitor) }}</xf:set>
+	<dl class="formRow formRow--limited">
+		<dt><div class="formRow-labelWrapper"><label>{{ phrase('user_field_title.enterum_cp_reputation') }}</label></div></dt>
+		<dd>
+			<a href="{$repUrl}" target="_blank" rel="noopener">{$repUrl}</a>
+			<div class="formRow-explain">{{ phrase('enterum_char_profile_field_auto_explain') }}</div>
+		</dd>
+	</dl>
+	<dl class="formRow formRow--limited">
+		<dt><div class="formRow-labelWrapper"><label>{{ phrase('user_field_title.enterum_cp_backpack') }}</label></div></dt>
+		<dd>
+			<a href="{$bpUrl}" target="_blank" rel="noopener">{$bpUrl}</a>
+			<div class="formRow-explain">{{ phrase('enterum_char_profile_field_auto_explain') }}</div>
+		</dd>
+	</dl>
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_tooltip_links" version_id="1000086" version_string="1.0.16"><![CDATA[<xf:if is="$user.canViewCharacterProfileTabs()">
+	<span class="cp-nav-link-seed" hidden="hidden"
+		data-cp-mode="tooltip"
+		data-rep-url="{{ link('members/reputation', $user) }}"
+		data-bp-url="{{ link('members/backpack', $user) }}"
+		data-rep-title="{{ phrase('enterum_char_profile_tab_reputation') }}"
+		data-bp-title="{{ phrase('enterum_char_profile_tab_backpack') }}"
+		data-after-title="{{ phrase('enterum_char_profile_tab_character_sheet') }}"></span>
+	<xf:include template="enterum_char_profile_nav_links_js" />
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_account_menu_links" version_id="1000088" version_string="1.0.18"><![CDATA[<xf:if is="$xf.visitor.user_id && $xf.visitor.canViewCharacterProfileTabs()">
+	<li><a href="{{ link('members/reputation', $xf.visitor) }}" class="menu-linkRow" data-cp-profile-link="reputation">{{ phrase('enterum_char_profile_tab_reputation') }}</a></li>
+	<li><a href="{{ link('members/backpack', $xf.visitor) }}" class="menu-linkRow" data-cp-profile-link="backpack">{{ phrase('enterum_char_profile_tab_backpack') }}</a></li>
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_account_menu_fallback" version_id="1000088" version_string="1.0.18"><![CDATA[<xf:if is="$xf.visitor.user_id && $xf.visitor.canViewCharacterProfileTabs()">
+	<span class="cp-nav-link-seed" hidden="hidden"
+		data-cp-mode="account-menu"
+		data-rep-url="{{ link('members/reputation', $xf.visitor) }}"
+		data-bp-url="{{ link('members/backpack', $xf.visitor) }}"
+		data-rep-title="{{ phrase('enterum_char_profile_tab_reputation') }}"
+		data-bp-title="{{ phrase('enterum_char_profile_tab_backpack') }}"
+		data-after-title="{{ phrase('enterum_char_profile_tab_character_sheet') }}"
+		data-before-title="{{ phrase('news_feed') }}"></span>
+	<xf:include template="enterum_char_profile_nav_links_js" />
+</xf:if>]]></template>
+
+  <template type="public" title="enterum_char_profile_nav_links_js" version_id="1000088" version_string="1.0.18"><![CDATA[<script>
+(function () {
+	if (window.__cpNavLinksInit) {
+		window.__cpNavLinksRun && window.__cpNavLinksRun();
+		return;
+	}
+	window.__cpNavLinksInit = true;
+
+	function textOf(el) {
+		return (el && (el.textContent || '') || '').replace(/\s+/g, ' ').trim();
+	}
+
+	function findAnchorByText(scope, title) {
+		if (!scope || !title) return null;
+		var links = scope.querySelectorAll('a');
+		for (var i = 0; i < links.length; i++) {
+			if (textOf(links[i]) === title) {
+				return links[i];
+			}
+		}
+		return null;
+	}
+
+	function ensureTooltipButtons(seed) {
+		var scope = seed.closest('.memberTooltip')
+			|| seed.closest('.tooltip--member')
+			|| seed.closest('.tooltip-content')
+			|| document;
+		var group = scope.querySelector('.memberTooltip-actions .buttonGroup')
+			|| scope.querySelector('.memberTooltip-actions');
+		if (!group) return false;
+
+		var afterTitle = seed.getAttribute('data-after-title') || 'Лист персонажа';
+		var after = findAnchorByText(group, afterTitle);
+		var insertRef = after ? after.nextSibling : null;
+
+		function addBtn(key, href, title) {
+			if (!href || !title) return;
+			if (group.querySelector('a[data-cp-profile-link="' + key + '"]')) return;
+			var a = document.createElement('a');
+			a.href = href;
+			a.className = 'button button--link';
+			a.setAttribute('data-cp-profile-link', key);
+			a.textContent = title;
+			if (after && after.parentNode === group) {
+				group.insertBefore(a, insertRef);
+				insertRef = a.nextSibling;
+			} else {
+				group.appendChild(a);
+			}
+		}
+
+		addBtn('reputation', seed.getAttribute('data-rep-url'), seed.getAttribute('data-rep-title'));
+		addBtn('backpack', seed.getAttribute('data-bp-url'), seed.getAttribute('data-bp-title'));
+		return true;
+	}
+
+	function ensureAccountMenuItems(seed) {
+		if (document.querySelector('.menu-linkRow[data-cp-profile-link="reputation"]')) {
+			return true;
+		}
+
+		var scope = seed.closest('.menu-content')
+			|| seed.closest('[data-menu-content]')
+			|| document.querySelector('.menu--account .menu-content, .p-navgroup-link--user .menu-content, .offCanvasMenu--account')
+			|| document;
+
+		var afterTitle = seed.getAttribute('data-after-title') || 'Лист персонажа';
+		var beforeTitle = seed.getAttribute('data-before-title') || 'Новостная лента';
+		var afterLink = findAnchorByText(scope, afterTitle);
+		var beforeLink = findAnchorByText(scope, beforeTitle);
+
+		// Ищем первую колонку ссылок (где Анкета / Лист / Новостная лента).
+		var list = null;
+		if (afterLink) list = afterLink.closest('ul');
+		if (!list && beforeLink) list = beforeLink.closest('ul');
+		if (!list) {
+			var lists = scope.querySelectorAll('ul.listColumns, ul.listPlain.listColumns');
+			list = lists.length ? lists[0] : null;
+		}
+		if (!list) return false;
+
+		var afterLi = afterLink ? afterLink.closest('li') : null;
+		var beforeLi = beforeLink ? beforeLink.closest('li') : null;
+		var insertRef = null;
+		if (afterLi && afterLi.parentNode === list) {
+			insertRef = afterLi.nextSibling;
+		} else if (beforeLi && beforeLi.parentNode === list) {
+			insertRef = beforeLi;
+		}
+
+		function addItem(key, href, title) {
+			if (!href || !title) return;
+			if (list.querySelector('a[data-cp-profile-link="' + key + '"]')) return;
+			if (findAnchorByText(list, title)) return;
+			var li = document.createElement('li');
+			var a = document.createElement('a');
+			a.href = href;
+			a.className = 'menu-linkRow';
+			a.setAttribute('data-cp-profile-link', key);
+			a.textContent = title;
+			li.appendChild(a);
+			if (insertRef && insertRef.parentNode === list) {
+				list.insertBefore(li, insertRef);
+				insertRef = li.nextSibling;
+			} else {
+				list.appendChild(li);
+			}
+		}
+
+		addItem('reputation', seed.getAttribute('data-rep-url'), seed.getAttribute('data-rep-title'));
+		addItem('backpack', seed.getAttribute('data-bp-url'), seed.getAttribute('data-bp-title'));
+		return true;
+	}
+
+	function injectSeed(seed) {
+		if (!seed) return;
+		var mode = seed.getAttribute('data-cp-mode') || '';
+		var ok = false;
+		if (mode === 'tooltip') {
+			ok = ensureTooltipButtons(seed);
+		} else if (mode === 'account-menu') {
+			ok = ensureAccountMenuItems(seed);
+		}
+		if (ok) {
+			seed.setAttribute('data-cp-done', '1');
+		}
+	}
+
+	function run() {
+		document.querySelectorAll('.cp-nav-link-seed').forEach(injectSeed);
+	}
+
+	window.__cpNavLinksRun = run;
+	run();
+	document.addEventListener('DOMContentLoaded', run);
+	document.addEventListener('click', function () {
+		window.setTimeout(run, 50);
+	}, true);
+	if (window.XF && XF.on) {
+		try { XF.on(document, 'menu:click', function () { window.setTimeout(run, 30); }); } catch (e) {}
+	}
+})();
+</script>]]></template>
+
   <template type="public" title="enterum_char_profile_tabs" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:if is="$user.canViewCharacterProfileTabs()">
 	<h2 class="tabs tabs--standalone cp-tabs">
 		<a href="{{ link('members', $user) }}" class="tabs-tab">{{ phrase('enterum_char_profile_back_to_profile') }}</a>
@@ -27,7 +324,7 @@
 	</h2>
 </xf:if>]]></template>
 
-  <template type="public" title="enterum_char_profile_reputation" version_id="1000078" version_string="1.0.8"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
+  <template type="public" title="enterum_char_profile_reputation" version_id="1000086" version_string="1.0.16"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
 
 <xf:css src="enterum_char_profile.less" />
 
@@ -43,7 +340,6 @@
 						<xf:foreach loop="range(1, 3)" value="$i">
 							<i class="fa-{{ $i <= $profile.hero_points_cache ? 'solid' : 'regular' }} fa-circle cp-heroDot cp-heroDot--{{ $i <= $profile.hero_points_cache ? 'filled' : 'empty' }}"></i>
 						</xf:foreach>
-						<span class="cp-heroDotsHelp" data-cp-tooltip="{{ phrase('enterum_char_profile_hero_reroll_tooltip') }}" title="{{ phrase('enterum_char_profile_hero_reroll_tooltip') }}"><xf:fa icon="fa-circle-question" /></span>
 					</span>
 				</div>
 				<hr class="cp-heroDivider" />
