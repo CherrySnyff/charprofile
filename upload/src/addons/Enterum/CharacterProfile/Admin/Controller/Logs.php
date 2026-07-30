@@ -50,7 +50,14 @@ class Logs extends AbstractController
         if (!in_array($contentType, $allowedTypes, true)) {
             $contentType = '';
         }
-        $actionFilter = (string)$this->filter('action', 'str');
+        $actionFilter = (string)$this->filter('log_action', 'str');
+        if ($actionFilter === '') {
+            // Обратная совместимость со старыми ссылками/закладками.
+            $actionFilter = (string)$this->filter('action', 'str');
+        }
+        if (!in_array($actionFilter, ['add', 'edit', 'delete', ''], true)) {
+            $actionFilter = '';
+        }
         $targetUserFilter = trim((string)$this->filter('target_user', 'str'));
         $actorUserFilter = trim((string)$this->filter('actor_user', 'str'));
         $dateFromFilter = trim((string)$this->filter('date_from', 'str'));
@@ -74,7 +81,7 @@ class Logs extends AbstractController
 
         $filterParams = [
             'type' => $contentType,
-            'action' => $actionFilter,
+            'log_action' => $actionFilter,
             'target_user' => $targetUserFilter,
             'actor_user' => $actorUserFilter,
             'date_from' => $dateFromFilter,
@@ -167,7 +174,7 @@ class Logs extends AbstractController
 
         $redirectParams = [
             'type' => (string)$this->filter('type', 'str'),
-            'action' => (string)$this->filter('action', 'str'),
+            'log_action' => trim((string)$this->filter('log_action', 'str')),
             'target_user' => trim((string)$this->filter('target_user', 'str')),
             'actor_user' => trim((string)$this->filter('actor_user', 'str')),
             'date_from' => trim((string)$this->filter('date_from', 'str')),
@@ -225,10 +232,13 @@ class Logs extends AbstractController
         $csv = $this->buildExportCsv($rows);
         $fileName = 'char_profile_logs_' . date('Y-m-d_His') . '.csv';
 
-        $this->app->response()->header('Content-Type', 'text/csv; charset=UTF-8');
-        $this->app->response()->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+        $view = $this->view('Enterum\CharacterProfile:Logs\Export', '', [
+            'csv' => $csv,
+            'fileName' => $fileName,
+        ]);
+        $view->setResponseType('raw');
 
-        return $this->message($csv)->setResponseType('raw');
+        return $view;
     }
 
     /**
@@ -238,7 +248,14 @@ class Logs extends AbstractController
      */
     protected function buildExportFilters(string $contentType): array
     {
-        $actionFilter = (string)$this->filter('action', 'str');
+        $actionFilter = (string)$this->filter('log_action', 'str');
+        if ($actionFilter === '') {
+            $actionFilter = (string)$this->filter('action', 'str');
+            // Не принимать значения маршрута (export/delete/...) как фильтр действия.
+            if (!in_array($actionFilter, ['add', 'edit', 'delete', ''], true)) {
+                $actionFilter = '';
+            }
+        }
         $targetUserFilter = trim((string)$this->filter('target_user', 'str'));
         $actorUserFilter = trim((string)$this->filter('actor_user', 'str'));
         $dateFromFilter = trim((string)$this->filter('date_from', 'str'));

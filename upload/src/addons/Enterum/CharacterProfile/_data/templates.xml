@@ -13,7 +13,7 @@
 	</h2>
 </xf:if>]]></template>
 
-  <template type="public" title="enterum_char_profile_reputation" version_id="1000076" version_string="1.0.6"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
+  <template type="public" title="enterum_char_profile_reputation" version_id="1000078" version_string="1.0.8"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
 
 <xf:css src="enterum_char_profile.less" />
 
@@ -125,7 +125,7 @@
 								<td>{$ir.label}</td>
 								<td class="cp-rep-negative">{$ir.negative|number}</td>
 								<td>{$ir.positive|number}</td>
-								<td>{$ir.total|number}</td>
+								<td<xf:if is="$ir.total < 0"> class="cp-rep-negative"</xf:if>>{$ir.total|number}</td>
 							</tr>
 						</xf:foreach>
 					</table>
@@ -736,7 +736,7 @@
 	</div>
 </div>]]></template>
 
-  <template type="admin" title="enterum_char_profile_acp_logs" version_id="1000076" version_string="1.0.6"><![CDATA[<xf:title>{{ phrase('admin_navigation.enterum_char_profile_logs') }}</xf:title>
+  <template type="admin" title="enterum_char_profile_acp_logs" version_id="1000078" version_string="1.0.8"><![CDATA[<xf:title>{{ phrase('admin_navigation.enterum_char_profile_logs') }}</xf:title>
 
 <xf:css src="enterum_char_profile_acp.less" />
 
@@ -756,7 +756,7 @@
 	<div class="block-container">
 		<div class="block-body block-row">
 			<xf:foreach loop="$contentTypeTabs" value="$tab">
-				<a href="{{ link('character-profile/logs', null, {'type': $tab.key, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': $sort, 'direction': $direction}) }}" class="button<xf:if is="$filterType == $tab.key"> button--primary</xf:if>" style="margin-right:6px; margin-bottom:6px;">{$tab.label}</a>
+				<a href="{{ link('character-profile/logs', null, {'type': $tab.key, 'log_action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': $sort, 'direction': $direction}) }}" class="button<xf:if is="$filterType == $tab.key"> button--primary</xf:if>" style="margin-right:6px; margin-bottom:6px;">{$tab.label}</a>
 			</xf:foreach>
 		</div>
 	</div>
@@ -776,7 +776,7 @@
 				</div>
 				<div>
 					<label style="display:block; margin-bottom:3px;">{{ phrase('enterum_char_profile_log_filter_action') }}</label>
-					<select name="action" class="input">
+					<select name="log_action" class="input">
 						<xf:foreach loop="$actionOptions" value="$action">
 							<option value="{$action.key}"{{ $filterAction == $action.key ? ' selected="selected"' : '' }}>{$action.label}</option>
 						</xf:foreach>
@@ -796,7 +796,7 @@
 				<div>
 					<button type="submit" class="button button--primary">{{ phrase('enterum_char_profile_log_filter_submit') }}</button>
 					<a href="{{ link('character-profile/logs', null, {'type': $filterType}) }}" class="button">{{ phrase('enterum_char_profile_log_filter_reset') }}</a>
-					<a href="{{ link('character-profile/logs/export', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': $sort, 'direction': $direction}) }}" class="button">{{ phrase('enterum_char_profile_log_export') }}</a>
+					<a href="{{ link('character-profile/logs/export', null, {'type': $filterType, 'log_action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': $sort, 'direction': $direction}) }}" class="button">{{ phrase('enterum_char_profile_log_export') }}</a>
 				</div>
 			</div>
 		</div>
@@ -804,25 +804,23 @@
 </xf:form>
 
 <xf:if is="$rows is not empty">
-	<xf:form action="{{ link('character-profile/logs/delete') }}" class="block cp-acpLogs">
+	<xf:form action="{{ link('character-profile/logs/delete') }}" ajax="true" class="block cp-acpLogs">
 		<div class="block-container">
 			<div class="block-body">
 				<xf:datalist>
-					<xf:datarow rowclass="dataList-row--header">
+					<xf:datarow rowtype="header">
+						<xf:cell class="dataList-cell--min">&nbsp;</xf:cell>
 						<xf:cell class="dataList-cell--min">
-							<xf:checkbox standalone="true" check-all=".js-logSelect" />
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'log_action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'date', 'direction': ($sort == 'date' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_date') }}</a>
 						</xf:cell>
 						<xf:cell class="dataList-cell--min">
-							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'date', 'direction': ($sort == 'date' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_date') }}</a>
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'log_action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'target', 'direction': ($sort == 'target' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_target') }}</a>
 						</xf:cell>
 						<xf:cell class="dataList-cell--min">
-							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'target', 'direction': ($sort == 'target' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_target') }}</a>
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'log_action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'actor', 'direction': ($sort == 'actor' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_actor') }}</a>
 						</xf:cell>
 						<xf:cell class="dataList-cell--min">
-							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'actor', 'direction': ($sort == 'actor' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_actor') }}</a>
-						</xf:cell>
-						<xf:cell class="dataList-cell--min">
-							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'type', 'direction': ($sort == 'type' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_type') }}</a>
+							<a href="{{ link('character-profile/logs', null, {'type': $filterType, 'log_action': $filterAction, 'target_user': $filterTargetUser, 'actor_user': $filterActorUser, 'date_from': $filterDateFrom, 'date_to': $filterDateTo, 'sort': 'type', 'direction': ($sort == 'type' && $direction == 'asc' ? 'desc' : 'asc')}) }}">{{ phrase('enterum_char_profile_log_col_type') }}</a>
 						</xf:cell>
 						<xf:cell class="dataList-cell--min">{{ phrase('enterum_char_profile_log_col_action') }}</xf:cell>
 						<xf:cell class="dataList-cell--min">{{ phrase('enterum_char_profile_log_col_id') }}</xf:cell>
@@ -831,9 +829,7 @@
 
 					<xf:foreach loop="$rows" value="$row">
 						<xf:datarow>
-							<xf:cell class="dataList-cell--min">
-								<xf:checkbox name="delete[]" value="{$row.action_log_id}" class="js-logSelect" />
-							</xf:cell>
+							<xf:toggle name="delete[]" value="{$row.action_log_id}" />
 							<xf:cell class="dataList-cell--min">
 								<xf:date time="{$row.log_date}" />
 							</xf:cell>
@@ -853,10 +849,13 @@
 				</xf:datalist>
 			</div>
 			<div class="block-footer block-footer--split">
+				<span class="block-footer-select">
+					<xf:checkbox standalone="true" check-all=".cp-acpLogs .dataList" />
+				</span>
 				<span class="block-footer-counter"></span>
 				<span class="block-footer-controls">
 					<input type="hidden" name="type" value="{$filterType}" />
-					<input type="hidden" name="action" value="{$filterAction}" />
+					<input type="hidden" name="log_action" value="{$filterAction}" />
 					<input type="hidden" name="target_user" value="{$filterTargetUser}" />
 					<input type="hidden" name="actor_user" value="{$filterActorUser}" />
 					<input type="hidden" name="date_from" value="{$filterDateFrom}" />
@@ -864,17 +863,17 @@
 					<input type="hidden" name="sort" value="{$sort}" />
 					<input type="hidden" name="direction" value="{$direction}" />
 					<input type="hidden" name="page" value="{$page}" />
-					<button type="submit" class="button button--primary">{{ phrase('enterum_char_profile_log_delete_selected') }}</button>
+					<xf:button type="submit" icon="delete">{{ phrase('enterum_char_profile_log_delete_selected') }}</xf:button>
 				</span>
 			</div>
 		</div>
 	</xf:form>
 
-	<xf:form action="{{ link('character-profile/logs/delete-all') }}" class="block" style="margin-bottom: 10px;">
+	<xf:form action="{{ link('character-profile/logs/delete-all') }}" ajax="true" class="block" style="margin-bottom: 10px;">
 		<div class="block-container">
 			<div class="block-body block-row">
 				<input type="hidden" name="confirm" value="1" />
-				<button type="submit" class="button button--cta" onclick="return confirm({{ phrase('enterum_char_profile_log_delete_all_confirm')|json }});">{{ phrase('enterum_char_profile_log_delete_all') }}</button>
+				<xf:button type="submit" icon="delete" class="button--cta" data-confirm="{{ phrase('enterum_char_profile_log_delete_all_confirm') }}">{{ phrase('enterum_char_profile_log_delete_all') }}</xf:button>
 			</div>
 		</div>
 	</xf:form>

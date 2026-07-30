@@ -14,8 +14,5 @@
   <route route_type="public" route_prefix="members" sub_name="backpack_other" format=":int&lt;user_id&gt;/backpack/other/" controller="Enterum\CharacterProfile:BackpackOther"/>
   <route route_type="public" route_prefix="members" sub_name="character-sheet" format=":int&lt;user_id&gt;/character-sheet/" controller="Enterum\CharacterProfile:CharacterSheet"/>
   <route route_type="admin" route_prefix="character-profile" format="" controller="Enterum\CharacterProfile:Logs"/>
-  <route route_type="admin" route_prefix="character-profile" sub_name="logs" format="logs" controller="Enterum\CharacterProfile:Logs"/>
-  <route route_type="admin" route_prefix="character-profile" sub_name="logs-delete" format="logs/delete" controller="Enterum\CharacterProfile:Logs"/>
-  <route route_type="admin" route_prefix="character-profile" sub_name="logs-delete-all" format="logs/delete-all" controller="Enterum\CharacterProfile:Logs"/>
-  <route route_type="admin" route_prefix="character-profile" sub_name="logs-export" format="logs/export" controller="Enterum\CharacterProfile:Logs"/>
+  <route route_type="admin" route_prefix="character-profile" sub_name="logs" format="logs/:action" controller="Enterum\CharacterProfile:Logs"/>
 </routes>
