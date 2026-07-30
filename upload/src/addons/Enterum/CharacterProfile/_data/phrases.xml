@@ -92,4 +92,5 @@
 - flat-проверки.
 - Все оставшиеся ОГ, минимум 1 — избежать смерти: снять состояние «При смерти» и стабилизироваться на 0 ОЗ.]]></phrase>
   <phrase title="enterum_char_profile_rep_quest_footnote" version_id="1000076" version_string="1.0.6"><![CDATA[Дальнейшее повышение репутации возможно только через квесты.]]></phrase>
+  <phrase title="enterum_char_profile_hero_points_label" version_id="1000079" version_string="1.0.9"><![CDATA[Очки Геройства]]></phrase>
 </phrases>

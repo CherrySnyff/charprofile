@@ -128,6 +128,8 @@ class HeroPointManager extends AbstractService
         $profile->last_update = \XF::$time;
         $profile->save();
 
+        \Enterum\CharacterProfile\XF\Entity\User::clearCharacterHeroPointsMemo($userId);
+
         return $profile;
     }
 
@@ -374,6 +376,49 @@ class HeroPointManager extends AbstractService
             $amount = abs((int)$log->amount);
             $signed = $log->operation_type === 'loss' ? -$amount : $amount;
             $running = max(0, min($max, $running + $signed));
+        }
+
+        return $running;
+    }
+
+    /**
+     * ОГ / UI: актуальный баланс напрямую из БД (обход entity-кэша).
+     * При расхождении подтягивает hero_points_cache.
+     */
+    public function getLiveBalance(int $userId): int
+    {
+        $max = $this->getHeroMax();
+        $rows = $this->db()->fetchAll(
+            'SELECT amount, operation_type
+             FROM xf_char_profile_hero_log
+             WHERE user_id = ?
+             ORDER BY event_date ASC, created_date ASC, hero_log_id ASC',
+            [$userId]
+        );
+
+        $running = 0;
+        foreach ($rows as $row) {
+            $amount = abs((int)$row['amount']);
+            $signed = ((string)$row['operation_type'] === 'loss') ? -$amount : $amount;
+            $running = max(0, min($max, $running + $signed));
+        }
+
+        $cached = $this->db()->fetchOne(
+            'SELECT hero_points_cache FROM xf_char_profile WHERE user_id = ?',
+            [$userId]
+        );
+        if ($cached !== false && $cached !== null && (int)$cached !== $running) {
+            $this->db()->update(
+                'xf_char_profile',
+                [
+                    'hero_points_cache' => $running,
+                    'hero_points_raw_sum' => $running,
+                    'last_update' => \XF::$time,
+                ],
+                'user_id = ?',
+                [$userId]
+            );
+            $this->em()->clearEntityCache('Enterum\CharacterProfile:CharProfile', $userId);
         }
 
         return $running;

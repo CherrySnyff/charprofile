@@ -20,4 +20,10 @@
     <replace><![CDATA[<span class="hScroller-scroll">
 					<xf:include template="enterum_char_profile_tab_links" />]]></replace>
   </modification>
+  <modification type="public" template="message_macros" modification_key="enterum_cp_message_hero_points" description="Hero points dots under message-userExtras" execution_order="50" enabled="1" action="preg_replace">
+    <find><![CDATA[#(<div class="message-userExtras">\s*<xf:contentcheck>)(.*?)(</xf:contentcheck>\s*</div>)#s]]></find>
+    <replace><![CDATA[$1$2
+					<xf:include template="enterum_char_profile_message_hero" />
+				$3]]></replace>
+  </modification>
 </template_modifications>

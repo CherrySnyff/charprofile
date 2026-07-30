@@ -5,6 +5,20 @@
 	<a href="{{ link('members/backpack', $user) }}" class="tabs-tab{{ $cpCharProfileTab == 'backpack' ? ' is-active' : '' }}" rel="nofollow">{{ phrase('enterum_char_profile_tab_backpack') }}</a>
 </xf:if>]]></template>
 
+  <template type="public" title="enterum_char_profile_message_hero" version_id="1000081" version_string="1.0.11"><![CDATA[<xf:if is="$user.canViewCharacterProfileTabs()">
+	<xf:css src="enterum_char_profile.less" />
+	<dl class="pairs pairs--justified">
+		<dt>{{ phrase('enterum_char_profile_hero_points_label') }}</dt>
+		<dd>
+			<span class="cp-heroDots cp-heroDots--message" title="{{ phrase('enterum_char_profile_hero_points_label') }}: {$user.character_hero_points}" data-cp-hero="{$user.character_hero_points}">
+				<xf:foreach loop="range(1, 3)" value="$i">
+					<i class="fa-{{ $i <= $user.character_hero_points ? 'solid' : 'regular' }} fa-circle cp-heroDot cp-heroDot--{{ $i <= $user.character_hero_points ? 'filled' : 'empty' }}" aria-hidden="true"></i>
+				</xf:foreach>
+			</span>
+		</dd>
+	</dl>
+</xf:if>]]></template>
+
   <template type="public" title="enterum_char_profile_tabs" version_id="1000070" version_string="1.0.0"><![CDATA[<xf:if is="$user.canViewCharacterProfileTabs()">
 	<h2 class="tabs tabs--standalone cp-tabs">
 		<a href="{{ link('members', $user) }}" class="tabs-tab">{{ phrase('enterum_char_profile_back_to_profile') }}</a>
@@ -893,7 +907,7 @@
 }
 ]]></template>
 
-  <template type="public" title="enterum_char_profile.less" version_id="1000076" version_string="1.0.6"><![CDATA[.cp-tabs,
+  <template type="public" title="enterum_char_profile.less" version_id="1000079" version_string="1.0.9"><![CDATA[.cp-tabs,
 .cp-subTabs {
 	margin-bottom: 12px;
 }
@@ -919,6 +933,18 @@
 
 .cp-heroDots {
 	margin-left: 8px;
+}
+
+.cp-heroDots--message {
+	margin-left: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	vertical-align: middle;
+}
+
+.cp-heroDots--message .cp-heroDot {
+	font-size: 11px;
 }
 
 .cp-heroDot {
