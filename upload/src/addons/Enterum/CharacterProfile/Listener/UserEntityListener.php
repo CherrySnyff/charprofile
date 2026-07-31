@@ -35,6 +35,16 @@ class UserEntityListener
         $initializer = \XF::app()->service('Enterum\CharacterProfile:ProfileInitializer');
         if ($initializer->userHasTriggerGroup($entity)) {
             $initializer->ensureProfileRow($entity->user_id);
+            return;
+        }
+
+        // Сняли группу-триггер — убрать значения полей Репутация/Рюкзак.
+        try {
+            /** @var \Enterum\CharacterProfile\Service\ProfilePageLinks $links */
+            $links = \XF::app()->service('Enterum\CharacterProfile:ProfilePageLinks');
+            $links->clearLinks($entity);
+        } catch (\Throwable $e) {
+            // не блокируем сохранение пользователя
         }
     }
 }

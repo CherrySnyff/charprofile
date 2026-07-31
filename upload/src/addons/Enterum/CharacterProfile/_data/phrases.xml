@@ -9,6 +9,8 @@
   <phrase title="option.charProfileEnableActionLog" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Включить логирование]]></phrase>
   <phrase title="option_explain.charProfileItemsPerPage" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Количество записей на странице в списках профиля и ACP-логах.]]></phrase>
   <phrase title="option.charProfileItemsPerPage" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Записей на странице]]></phrase>
+  <phrase title="option.charProfileRepSubtractNegative" version_id="1000089" version_string="1.0.19"><![CDATA[Отнимать отрицательную репутацию от общей]]></phrase>
+  <phrase title="option_explain.charProfileRepSubtractNegative" version_id="1000089" version_string="1.0.19"><![CDATA[Если включено: общая = положительная − |отрицательная|. Если выключено: общая = положительная + |отрицательная|. Применяется к таблице влияния по биомам и к суммам фракций (включая класс отношения). Пересчёт сразу после сохранения опции — при следующем открытии профиля.]]></phrase>
   <phrase title="permission_interface.charProfile_general" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: общие права]]></phrase>
   <phrase title="permission_interface.charProfile_management" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: управление]]></phrase>
   <phrase title="permission.character_profile_view" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Просмотр вкладок профиля игрока]]></phrase>
@@ -93,4 +95,9 @@
 - Все оставшиеся ОГ, минимум 1 — избежать смерти: снять состояние «При смерти» и стабилизироваться на 0 ОЗ.]]></phrase>
   <phrase title="enterum_char_profile_rep_quest_footnote" version_id="1000076" version_string="1.0.6"><![CDATA[Дальнейшее повышение репутации возможно только через квесты.]]></phrase>
   <phrase title="enterum_char_profile_hero_points_label" version_id="1000079" version_string="1.0.9"><![CDATA[Очки Геройства]]></phrase>
+  <phrase title="user_field_title.enterum_cp_reputation" version_id="1000083" version_string="1.0.13"><![CDATA[Репутация]]></phrase>
+  <phrase title="user_field_desc.enterum_cp_reputation" version_id="1000083" version_string="1.0.13"><![CDATA[Ссылка на вкладку «Репутация». Заполняется автоматически и не редактируется.]]></phrase>
+  <phrase title="user_field_title.enterum_cp_backpack" version_id="1000083" version_string="1.0.13"><![CDATA[Рюкзак]]></phrase>
+  <phrase title="user_field_desc.enterum_cp_backpack" version_id="1000083" version_string="1.0.13"><![CDATA[Ссылка на вкладку «Рюкзак». Заполняется автоматически и не редактируется.]]></phrase>
+  <phrase title="enterum_char_profile_field_auto_explain" version_id="1000083" version_string="1.0.13"><![CDATA[Заполняется автоматически при выдаче группы принятых игроков. Изменить нельзя.]]></phrase>
 </phrases>

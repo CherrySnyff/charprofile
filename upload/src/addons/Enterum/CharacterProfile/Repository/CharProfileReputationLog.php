@@ -85,7 +85,7 @@ class CharProfileReputationLog extends Repository
                 'label' => $label,
                 'negative' => $neg,
                 'positive' => $pos,
-                'total' => $pos + $neg,
+                'total' => ReputationDisplay::computeTotal($pos, $neg),
             ];
         }
 
@@ -104,7 +104,8 @@ class CharProfileReputationLog extends Repository
                 SELECT
                     LOWER(TRIM(faction_name)) AS fn,
                     MIN(faction_name) AS display_name,
-                    SUM(amount) AS total
+                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS pos_sum,
+                    COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) AS neg_sum
                 FROM xf_char_profile_reputation_log
                 WHERE user_id = ? AND region_key = ?
                 GROUP BY LOWER(TRIM(faction_name))
@@ -115,7 +116,7 @@ class CharProfileReputationLog extends Repository
 
         $out = [];
         foreach ($rows as $row) {
-            $total = (int)$row['total'];
+            $total = ReputationDisplay::computeTotal((int)$row['pos_sum'], (int)$row['neg_sum']);
             $relationClass = ReputationDisplay::relationClass($total);
             $out[] = [
                 'display_name' => (string)$row['display_name'],

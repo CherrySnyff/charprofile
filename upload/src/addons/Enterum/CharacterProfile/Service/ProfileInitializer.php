@@ -57,6 +57,7 @@ class ProfileInitializer extends AbstractService
                 $existing->last_update = \XF::$time;
                 $existing->save();
             }
+            $this->syncProfilePageLinks($userId);
             return false;
         }
 
@@ -68,7 +69,29 @@ class ProfileInitializer extends AbstractService
         $profile->last_update = \XF::$time;
         $profile->save();
 
+        $this->syncProfilePageLinks($userId);
+
         return true;
+    }
+
+    /**
+     * Профиль / UI: ссылки Репутация/Рюкзак в блоке charfieldslinks поля профиля.
+     */
+    public function syncProfilePageLinks(int $userId): void
+    {
+        /** @var User|null $user */
+        $user = $this->em()->find('XF:User', $userId);
+        if (!$user) {
+            return;
+        }
+
+        try {
+            /** @var ProfilePageLinks $links */
+            $links = $this->app->service('Enterum\CharacterProfile:ProfilePageLinks');
+            $links->ensureLinks($user);
+        } catch (\Throwable $e) {
+            // Не блокируем создание профиля из‑за поля ссылок.
+        }
     }
 
     /**

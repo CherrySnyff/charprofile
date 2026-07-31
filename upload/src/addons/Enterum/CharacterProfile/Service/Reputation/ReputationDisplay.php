@@ -10,6 +10,25 @@ namespace Enterum\CharacterProfile\Service\Reputation;
 class ReputationDisplay
 {
     /**
+     * Репутация / UI: общая сумма из положительной и отрицательной частей.
+     * $negative может быть отрицательным (−5) или абсолютным (5).
+     *
+     * subtractNegative=true  → положительная − |отрицательная|
+     * subtractNegative=false → положительная + |отрицательная|
+     */
+    public static function computeTotal(int $positive, int $negative, ?bool $subtractNegative = null): int
+    {
+        if ($subtractNegative === null) {
+            $subtractNegative = (bool)(\XF::options()->charProfileRepSubtractNegative ?? true);
+        }
+
+        $pos = abs($positive);
+        $negAbs = abs($negative);
+
+        return $subtractNegative ? ($pos - $negAbs) : ($pos + $negAbs);
+    }
+
+    /**
      * Репутация / UI: CSS-класс отношения по сумме (despised…legend).
      */
     public static function relationClass(int $sum): string
