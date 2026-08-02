@@ -288,14 +288,6 @@ class HeroPointManager extends AbstractService
     }
 
     /**
-     * ОГ: сегодняшняя дата в формате хранения Y-m-d.
-     */
-    protected function todayAsStorageDate(): string
-    {
-        return date('Y-m-d');
-    }
-
-    /**
      * ОГ / UI: одна строка журнала для шаблона (CSS, подпись, поля формы).
      */
     protected function buildDisplayRow(CharProfileHeroLog $log): array
@@ -382,8 +374,8 @@ class HeroPointManager extends AbstractService
     }
 
     /**
-     * ОГ / UI: актуальный баланс напрямую из БД (обход entity-кэша).
-     * При расхождении подтягивает hero_points_cache.
+     * ОГ / UI: актуальный баланс напрямую из журнала (обход entity-кэша).
+     * Только чтение — кэш xf_char_profile здесь не пишем (запись только в recalculateForUser).
      */
     public function getLiveBalance(int $userId): int
     {
@@ -401,24 +393,6 @@ class HeroPointManager extends AbstractService
             $amount = abs((int)$row['amount']);
             $signed = ((string)$row['operation_type'] === 'loss') ? -$amount : $amount;
             $running = max(0, min($max, $running + $signed));
-        }
-
-        $cached = $this->db()->fetchOne(
-            'SELECT hero_points_cache FROM xf_char_profile WHERE user_id = ?',
-            [$userId]
-        );
-        if ($cached !== false && $cached !== null && (int)$cached !== $running) {
-            $this->db()->update(
-                'xf_char_profile',
-                [
-                    'hero_points_cache' => $running,
-                    'hero_points_raw_sum' => $running,
-                    'last_update' => \XF::$time,
-                ],
-                'user_id = ?',
-                [$userId]
-            );
-            $this->em()->clearEntityCache('Enterum\CharacterProfile:CharProfile', $userId);
         }
 
         return $running;

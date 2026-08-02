@@ -17,6 +17,7 @@ class BackpackFindUsers extends AbstractProfileAction
      */
     public function actionIndex(ParameterBag $params): AbstractReply
     {
+        $this->assertRegistrationRequired();
         $user = $this->loadProfileUser($params);
         $visitor = \XF::visitor();
 
@@ -24,7 +25,11 @@ class BackpackFindUsers extends AbstractProfileAction
             return $this->noPermission();
         }
 
+        // Ограничение длины запроса — защита от тяжёлых LIKE на огромных строках.
         $q = trim($this->filter('q', 'str'));
+        if (mb_strlen($q) > 50) {
+            $q = mb_substr($q, 0, 50);
+        }
         if (mb_strlen($q) < 2) {
             $this->setResponseType('json');
 

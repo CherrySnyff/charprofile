@@ -104,19 +104,19 @@ class ActionLogDisplay
         $source = $newData ?: $oldData ?: $data;
 
         if (!empty($source['operation_type'])) {
-            $parts[] = 'тип: ' . $source['operation_type'];
+            $parts[] = 'тип: ' . self::safe((string)$source['operation_type']);
         }
         if (isset($source['amount'])) {
             $parts[] = 'кол-во: ' . (int)$source['amount'];
         }
         if (!empty($source['event_date'])) {
-            $parts[] = 'дата события: ' . $source['event_date'];
+            $parts[] = 'дата события: ' . self::safe((string)$source['event_date']);
         }
         if (!empty($source['source_title'])) {
-            $parts[] = $source['source_title'];
+            $parts[] = self::safe((string)$source['source_title']);
         }
         if (!empty($source['source_url'])) {
-            $parts[] = self::truncate((string)$source['source_url'], 80);
+            $parts[] = self::safe(self::truncate((string)$source['source_url'], 80));
         }
 
         if ($action === 'edit' && $oldData && $newData) {
@@ -141,22 +141,22 @@ class ActionLogDisplay
             $parts[] = 'фракция #' . (int)$source['faction_id'];
         }
         if (!empty($source['faction_name'])) {
-            $parts[] = (string)$source['faction_name'];
+            $parts[] = self::safe((string)$source['faction_name']);
         }
         if (!empty($source['region_id'])) {
             $parts[] = 'регион #' . (int)$source['region_id'];
         }
         if (!empty($source['region_key'])) {
-            $parts[] = (string)$source['region_key'];
+            $parts[] = self::safe((string)$source['region_key']);
         }
         if (!empty($source['character_name'])) {
-            $parts[] = (string)$source['character_name'];
+            $parts[] = self::safe((string)$source['character_name']);
         }
         if (isset($source['amount'])) {
             $parts[] = 'сумма: ' . (int)$source['amount'];
         }
         if (!empty($source['event_date'])) {
-            $parts[] = 'дата: ' . $source['event_date'];
+            $parts[] = 'дата: ' . self::safe((string)$source['event_date']);
         }
 
         if ($action === 'edit' && $oldData && $newData) {
@@ -178,10 +178,12 @@ class ActionLogDisplay
         $parts = [];
 
         if (!empty($source['item_name'])) {
-            $parts[] = $source['item_name'];
+            $parts[] = self::safe((string)$source['item_name']);
         }
-        if (!empty($source['item_rarity'])) {
-            $parts[] = $source['item_rarity'];
+        // rarity_key — актуальное поле сущности; item_rarity — старые снимки логов.
+        $rarity = $source['rarity_key'] ?? $source['item_rarity'] ?? '';
+        if ($rarity !== '') {
+            $parts[] = self::safe((string)$rarity);
         }
         if (isset($source['item_level'])) {
             $parts[] = 'ур. ' . (int)$source['item_level'];
@@ -199,16 +201,16 @@ class ActionLogDisplay
         $parts = [];
 
         if (!empty($source['item_name'])) {
-            $parts[] = $source['item_name'];
+            $parts[] = self::safe((string)$source['item_name']);
         }
         if (!empty($source['item_type'])) {
-            $parts[] = $source['item_type'];
+            $parts[] = self::safe((string)$source['item_type']);
         }
         if (isset($source['item_level'])) {
             $parts[] = 'ур. ' . (int)$source['item_level'];
         }
         if (!empty($source['author_username'])) {
-            $parts[] = '@' . $source['author_username'];
+            $parts[] = '@' . self::safe((string)$source['author_username']);
         }
 
         return $parts ? implode('; ', $parts) : self::formatJsonPreview($oldData, $newData);
@@ -222,10 +224,10 @@ class ActionLogDisplay
         $chunks = [];
 
         if ($oldData) {
-            $chunks[] = 'было: ' . self::truncate(json_encode($oldData, JSON_UNESCAPED_UNICODE), 120);
+            $chunks[] = 'было: ' . self::safe(self::truncate(json_encode($oldData, JSON_UNESCAPED_UNICODE) ?: '', 120));
         }
         if ($newData) {
-            $chunks[] = 'стало: ' . self::truncate(json_encode($newData, JSON_UNESCAPED_UNICODE), 120);
+            $chunks[] = 'стало: ' . self::safe(self::truncate(json_encode($newData, JSON_UNESCAPED_UNICODE) ?: '', 120));
         }
 
         return $chunks ? implode(' | ', $chunks) : '—';
@@ -256,10 +258,10 @@ class ActionLogDisplay
                 continue;
             }
 
-            $changes[] = $key . ': '
-                . self::truncate((string)$oldVal, 30)
+            $changes[] = self::safe((string)$key) . ': '
+                . self::safe(self::truncate((string)$oldVal, 30))
                 . ' → '
-                . self::truncate((string)$newVal, 30);
+                . self::safe(self::truncate((string)$newVal, 30));
         }
 
         if (!$changes) {
@@ -267,6 +269,14 @@ class ActionLogDisplay
         }
 
         return 'изм.: ' . implode(', ', array_slice($changes, 0, 5));
+    }
+
+    /**
+     * ACP logs: экранирование для колонки «Детали» (защита на случай |raw в шаблоне).
+     */
+    protected static function safe(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 
     /**

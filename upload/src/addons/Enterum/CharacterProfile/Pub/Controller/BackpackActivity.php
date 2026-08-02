@@ -20,6 +20,7 @@ class BackpackActivity extends AbstractProfileAction
     {
         $this->assertPostOnly();
         $this->assertValidCsrfToken($this->filter('_xfToken', 'str'));
+        $this->assertRegisteredMutator();
 
         $user = $this->loadProfileUser($params);
         $visitor = \XF::visitor();
@@ -38,6 +39,7 @@ class BackpackActivity extends AbstractProfileAction
     {
         $this->assertPostOnly();
         $this->assertValidCsrfToken($this->filter('_xfToken', 'str'));
+        $this->assertRegisteredMutator();
 
         $user = $this->loadProfileUser($params);
         $visitor = \XF::visitor();
@@ -57,6 +59,7 @@ class BackpackActivity extends AbstractProfileAction
     {
         $this->assertPostOnly();
         $this->assertValidCsrfToken($this->filter('_xfToken', 'str'));
+        $this->assertRegisteredMutator();
 
         $user = $this->loadProfileUser($params);
         $visitor = \XF::visitor();
