@@ -111,24 +111,19 @@ class Setup extends AbstractSetup
     }
 
     /**
-     * Upgrade 2.2: колонки блока «Прочее» в xf_char_profile (рюкзак).
+     * Upgrade 2.2–2.4: колонки блока «Прочее» в xf_char_profile (рюкзак).
+     * Три шага оставлены для совместимости с уже установленными промежуточными version_id.
      */
     public function upgrade22Step1(): void
     {
         BackpackOtherSchema::ensureColumns($this->app());
     }
 
-    /**
-     * Upgrade 2.3: повторная проверка колонок «Прочее» (рюкзак).
-     */
     public function upgrade23Step1(): void
     {
         BackpackOtherSchema::ensureColumns($this->app());
     }
 
-    /**
-     * Upgrade 2.4: повторная проверка колонок «Прочее» (рюкзак).
-     */
     public function upgrade24Step1(): void
     {
         BackpackOtherSchema::ensureColumns($this->app());
@@ -209,27 +204,27 @@ class Setup extends AbstractSetup
     }
 
     /**
-     * Upgrade 1.0.19: опция «отнимать отрицательную репутацию от общей».
+     * Upgrade 1.0.19–1.0.21: опция формулы репутации / формулы влияния.
+     * Данные live; шаги нужны только как маркеры version_id при обновлении через ACP.
      */
     public function upgrade1000089Step1(): void
     {
-        // Опция импортируется из options.xml; пересчёт live при открытии профилей.
     }
 
-    /**
-     * Upgrade 1.0.20: исправление суммы при снятой галочке (знак отрицательной репутации).
-     */
     public function upgrade1000090Step1(): void
     {
-        // Формула в ReputationDisplay::computeTotal; пересчёт live.
+    }
+
+    public function upgrade1000091Step1(): void
+    {
     }
 
     /**
-     * Upgrade 1.0.21: влияние по биомам = |отриц.| + положит. (без вычитания).
+     * Upgrade 1.0.22: security/cleanup review (без миграции схемы).
      */
-    public function upgrade1000091Step1(): void
+    public function upgrade1000092Step1(): void
     {
-        // Формула в CharProfileReputationLog::getInfluenceTable; пересчёт live.
+        // Правки только в PHP (без DDL): CSRF ACP, отказ от runtime ALTER/CREATE, read-only live ОГ.
     }
 
     protected function syncAcceptedUserProfileLinks(): void

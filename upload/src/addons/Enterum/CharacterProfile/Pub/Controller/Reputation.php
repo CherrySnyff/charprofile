@@ -2,8 +2,8 @@
 
 /**
  * GET: вкладка «Репутация» — блок ОГ + регионы/фракции.
- * Маршрут members/{user_id}/reputation; при открытии пересчитывает hero_points_cache.
- * Данные: HeroPointManager + ReputationLogManager.
+ * Маршрут members/{user_id}/reputation.
+ * Пересчёт ОГ только при мутациях HeroPointManager, не на каждый GET.
  */
 
 namespace Enterum\CharacterProfile\Pub\Controller;
@@ -26,7 +26,8 @@ class Reputation extends AbstractProfileAction
 
         /** @var HeroPointManager $heroManager */
         $heroManager = $this->service('Enterum\CharacterProfile:Hero\HeroPointManager');
-        $profile = $heroManager->recalculateForUser($user->user_id);
+        // Кэш ОГ уже в профиле; полный пересчёт — только после add/edit/delete ОГ.
+        $profile = $this->getPermissionGuard()->getOrCreateProfile($user);
 
         $heroData = $heroManager->getDisplayRows($user->user_id, $page);
         $today = date('d.m.Y');

@@ -25,9 +25,11 @@ class Logs extends AbstractController
         // Доступ в ACP только с admin permission аддона.
         $this->assertAdminPermission('characterProfile');
 
+        /** @var \Enterum\CharacterProfile\Service\PermissionGuard $guard */
+        $guard = $this->app->service('Enterum\CharacterProfile:PermissionGuard');
         $visitor = \XF::visitor();
-        // Дополнительно: супер-админ, админ форума или явное viewLogs.
-        if (!$visitor->is_super_admin && !$visitor->is_admin && !$visitor->hasPermission('character_profile', 'viewLogs')) {
+        // Супер-админ / админ форума / явное viewLogs (через PermissionGuard::canViewLogs + is_admin).
+        if (!$visitor->is_super_admin && !$visitor->is_admin && !$guard->canViewLogs($visitor)) {
             throw $this->exception($this->noPermission());
         }
     }
@@ -37,7 +39,7 @@ class Logs extends AbstractController
      */
     public function actionIndex(): AbstractReply
     {
-        $this->ensureActionLogTableExists();
+        // Таблицу создаёт только Setup — здесь только проверка наличия.
         $hasActionLogTable = $this->hasActionLogTable();
 
         $page = max(1, (int)$this->filter('page', 'uint'));
@@ -158,6 +160,7 @@ class Logs extends AbstractController
     public function actionDelete(): AbstractReply
     {
         $this->assertPostOnly();
+        $this->assertValidCsrfToken($this->filter('_xfToken', 'str'));
 
         if (!$this->hasActionLogTable()) {
             return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
@@ -193,6 +196,7 @@ class Logs extends AbstractController
     public function actionDeleteAll(): AbstractReply
     {
         $this->assertPostOnly();
+        $this->assertValidCsrfToken($this->filter('_xfToken', 'str'));
 
         if (!$this->hasActionLogTable()) {
             return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
@@ -361,46 +365,12 @@ class Logs extends AbstractController
     }
 
     /**
-     * ACP logs / схема: создать xf_char_profile_action_log, если таблицы нет.
-     */
-    protected function ensureActionLogTableExists(): void
-    {
-        try {
-            if ($this->app->schemaManager()->tableExists('xf_char_profile_action_log')) {
-                return;
-            }
-
-            $this->app->db()->query(
-                "CREATE TABLE IF NOT EXISTS `xf_char_profile_action_log` (
-                    `action_log_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                    `target_user_id` INT UNSIGNED NOT NULL,
-                    `actor_user_id` INT UNSIGNED NOT NULL DEFAULT 0,
-                    `content_type` VARCHAR(50) NOT NULL DEFAULT '',
-                    `content_id` INT UNSIGNED NOT NULL DEFAULT 0,
-                    `action` VARCHAR(20) NOT NULL DEFAULT '',
-                    `old_data` MEDIUMTEXT NULL,
-                    `new_data` MEDIUMTEXT NULL,
-                    `log_date` INT UNSIGNED NOT NULL DEFAULT 0,
-                    PRIMARY KEY (`action_log_id`),
-                    KEY `target_user_id` (`target_user_id`),
-                    KEY `actor_user_id` (`actor_user_id`),
-                    KEY `content_type` (`content_type`),
-                    KEY `action` (`action`),
-                    KEY `log_date` (`log_date`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
-            );
-        } catch (\Throwable $e) {
-            // DDL может не пройти без привилегий; список покажет предупреждение ниже.
-        }
-    }
-
-    /**
-     * ACP logs: есть ли таблица xf_char_profile_action_log.
+     * ACP logs: есть ли таблица xf_char_profile_action_log (без DDL — создание только в Setup).
      */
     protected function hasActionLogTable(): bool
     {
         try {
-            return (bool)$this->app->db()->fetchOne("SHOW TABLES LIKE 'xf_char_profile_action_log'");
+            return $this->app->schemaManager()->tableExists('xf_char_profile_action_log');
         } catch (\Throwable $e) {
             return false;
         }

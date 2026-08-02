@@ -68,7 +68,7 @@ class ReputationLogManager extends AbstractService
     public function addLog(User $profileUser, User $actor, array $input): CharProfileReputationLog
     {
         $this->assertCanManage($actor, $profileUser);
-        $this->assertAmountColumnSupportsNegative();
+        $this->assertAmountColumnIsSigned();
 
         $amount = (int)($input['reputation_amount'] ?? 0);
         if ($amount === 0) {
@@ -99,7 +99,7 @@ class ReputationLogManager extends AbstractService
             throw new \XF\PrintableException(\XF::phrase('requested_page_not_found'));
         }
 
-        $this->assertAmountColumnSupportsNegative();
+        $this->assertAmountColumnIsSigned();
 
         $amount = (int)($input['reputation_amount'] ?? 0);
         if ($amount === 0) {
@@ -175,9 +175,10 @@ class ReputationLogManager extends AbstractService
     }
 
     /**
-     * Репутация / схема: убедиться, что amount — signed INT (самолечение UNSIGNED).
+     * Репутация / схема: amount должен быть signed INT.
+     * DDL (ALTER) только в Setup::upgrade16Step1 — из публичного запроса схему не меняем.
      */
-    protected function assertAmountColumnSupportsNegative(): void
+    protected function assertAmountColumnIsSigned(): void
     {
         $tableName = 'xf_char_profile_reputation_log';
         $columnType = (string)$this->db()->fetchOne(
@@ -193,33 +194,12 @@ class ReputationLogManager extends AbstractService
         );
 
         if ($columnType !== '' && stripos($columnType, 'unsigned') !== false) {
-            try {
-                $this->db()->query(
-                    'ALTER TABLE `' . $tableName . '` MODIFY `amount` INT NOT NULL DEFAULT 0'
-                );
-            } catch (\Throwable $e) {
-                // Ниже проверим тип колонки после попытки самолечения.
-            }
-
-            $columnType = (string)$this->db()->fetchOne(
-                '
-                    SELECT COLUMN_TYPE
-                    FROM information_schema.COLUMNS
-                    WHERE TABLE_SCHEMA = DATABASE()
-                        AND TABLE_NAME = ?
-                        AND COLUMN_NAME = ?
-                    LIMIT 1
-                ',
-                [$tableName, 'amount']
+            throw new \XF\PrintableException(
+                'Колонка amount в таблице ' . $tableName
+                . ' имеет тип UNSIGNED. Администратору нужно выполнить SQL: ALTER TABLE `' . $tableName
+                . '` MODIFY `amount` INT NOT NULL DEFAULT 0; '
+                . 'или переустановить/обновить аддон (upgrade 1.6).'
             );
-
-            if ($columnType !== '' && stripos($columnType, 'unsigned') !== false) {
-                throw new \XF\PrintableException(
-                    'Колонка amount в таблице ' . $tableName
-                    . ' имеет тип UNSIGNED. Выполните SQL: ALTER TABLE `' . $tableName
-                    . '` MODIFY `amount` INT NOT NULL DEFAULT 0;'
-                );
-            }
         }
     }
 

@@ -59,6 +59,14 @@ abstract class AbstractProfileAction extends AbstractController
     }
 
     /**
+     * Мутации: гость не может POST (до проверок manage*).
+     */
+    protected function assertRegisteredMutator(): void
+    {
+        $this->assertRegistrationRequired();
+    }
+
+    /**
      * Общее: пользователь существует и visitor может смотреть полный профиль XF.
      */
     protected function assertViewableProfileUser($userId): User
