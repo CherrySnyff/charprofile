@@ -81,11 +81,13 @@ class CharProfileReputationLog extends Repository
             $sums = $this->fetchRegionReputationFlooredSums($userId, $key);
             $neg = $sums['neg'];
             $pos = $sums['pos'];
+            // Влияние (ТЗ): Общая = |отрицательная| + положительная — всегда сумма модулей, без вычитания.
+            // Опция ACP «отнимать отрицательную» влияет только на суммы фракций, не на эту таблицу.
             $rows[$key] = [
                 'label' => $label,
                 'negative' => $neg,
                 'positive' => $pos,
-                'total' => ReputationDisplay::computeTotal($pos, $neg),
+                'total' => abs($neg) + $pos,
             ];
         }
 

@@ -216,6 +216,22 @@ class Setup extends AbstractSetup
         // Опция импортируется из options.xml; пересчёт live при открытии профилей.
     }
 
+    /**
+     * Upgrade 1.0.20: исправление суммы при снятой галочке (знак отрицательной репутации).
+     */
+    public function upgrade1000090Step1(): void
+    {
+        // Формула в ReputationDisplay::computeTotal; пересчёт live.
+    }
+
+    /**
+     * Upgrade 1.0.21: влияние по биомам = |отриц.| + положит. (без вычитания).
+     */
+    public function upgrade1000091Step1(): void
+    {
+        // Формула в CharProfileReputationLog::getInfluenceTable; пересчёт live.
+    }
+
     protected function syncAcceptedUserProfileLinks(): void
     {
         $groupId = $this->resolveAcceptedGroupId();

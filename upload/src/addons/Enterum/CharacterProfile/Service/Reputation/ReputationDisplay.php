@@ -11,21 +11,27 @@ class ReputationDisplay
 {
     /**
      * Репутация / UI: общая сумма из положительной и отрицательной частей.
-     * $negative может быть отрицательным (−5) или абсолютным (5).
+     * $negative передаётся со знаком (≤ 0), $positive — ≥ 0.
      *
      * subtractNegative=true  → положительная − |отрицательная|
-     * subtractNegative=false → положительная + |отрицательная|
+     * subtractNegative=false → положительная + отрицательная (со знаком), т.е. обычная сумма записей
      */
     public static function computeTotal(int $positive, int $negative, ?bool $subtractNegative = null): int
     {
         if ($subtractNegative === null) {
-            $subtractNegative = (bool)(\XF::options()->charProfileRepSubtractNegative ?? true);
+            // XF boolean-опции могут приходить строкой "0"/"1" — (bool)"0" === true, поэтому через int.
+            $subtractNegative = (bool)(int)(\XF::options()->charProfileRepSubtractNegative ?? 1);
         }
 
-        $pos = abs($positive);
-        $negAbs = abs($negative);
+        $pos = (int)$positive;
+        $neg = (int)$negative;
 
-        return $subtractNegative ? ($pos - $negAbs) : ($pos + $negAbs);
+        if ($subtractNegative) {
+            return $pos - abs($neg);
+        }
+
+        // Снятая галочка: обычная сумма со знаком (−20 остаётся −20, не превращается в +20).
+        return $pos + $neg;
     }
 
     /**

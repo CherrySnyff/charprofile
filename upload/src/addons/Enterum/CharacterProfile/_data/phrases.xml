@@ -10,7 +10,7 @@
   <phrase title="option_explain.charProfileItemsPerPage" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Количество записей на странице в списках профиля и ACP-логах.]]></phrase>
   <phrase title="option.charProfileItemsPerPage" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Записей на странице]]></phrase>
   <phrase title="option.charProfileRepSubtractNegative" version_id="1000089" version_string="1.0.19"><![CDATA[Отнимать отрицательную репутацию от общей]]></phrase>
-  <phrase title="option_explain.charProfileRepSubtractNegative" version_id="1000089" version_string="1.0.19"><![CDATA[Если включено: общая = положительная − |отрицательная|. Если выключено: общая = положительная + |отрицательная|. Применяется к таблице влияния по биомам и к суммам фракций (включая класс отношения). Пересчёт сразу после сохранения опции — при следующем открытии профиля.]]></phrase>
+  <phrase title="option_explain.charProfileRepSubtractNegative" version_id="1000091" version_string="1.0.21"><![CDATA[Влияет на суммы фракций (и класс отношения). Если включено: общая фракции = положительная − |отрицательная|. Если выключено: общая = положительная + отрицательная (со знаком). Таблица влияния по биомам всегда: |отрицательная| + положительная.]]></phrase>
   <phrase title="permission_interface.charProfile_general" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: общие права]]></phrase>
   <phrase title="permission_interface.charProfile_management" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: управление]]></phrase>
   <phrase title="permission.character_profile_view" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Просмотр вкладок профиля игрока]]></phrase>
