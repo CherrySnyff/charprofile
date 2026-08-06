@@ -96,8 +96,19 @@ class CharProfileReputationLog extends Repository
 
     /**
      * Репутация / UI: агрегаты по фракциям региона + класс/подпись/тултип отношения.
+     * total — для отображения (с учётом лимита ±100); total_raw — фактическая сумма журнала.
      *
-     * @return list<array{display_name: string, faction_key: string, total: int, relation: string, relation_class: string, relation_tooltip: string}>
+     * @return list<array{
+     *   display_name: string,
+     *   faction_key: string,
+     *   total: int,
+     *   total_raw: int,
+     *   relation: string,
+     *   relation_class: string,
+     *   relation_tooltip: string,
+     *   show_quest_footnote: bool,
+     *   show_cap_footnote: bool
+     * }>
      */
     public function getFactionAggregatesForRegion(int $userId, string $regionKey): array
     {
@@ -118,16 +129,19 @@ class CharProfileReputationLog extends Repository
 
         $out = [];
         foreach ($rows as $row) {
-            $total = ReputationDisplay::computeTotal((int)$row['pos_sum'], (int)$row['neg_sum']);
-            $relationClass = ReputationDisplay::relationClass($total);
+            $rawTotal = ReputationDisplay::computeTotal((int)$row['pos_sum'], (int)$row['neg_sum']);
+            $displayTotal = ReputationDisplay::displayFactionTotal($rawTotal);
+            $relationClass = ReputationDisplay::relationClass($displayTotal);
             $out[] = [
                 'display_name' => (string)$row['display_name'],
                 'faction_key' => (string)$row['fn'],
-                'total' => $total,
-                'relation' => mb_strtoupper(ReputationDisplay::relationLabel($total)),
+                'total' => $displayTotal,
+                'total_raw' => $rawTotal,
+                'relation' => mb_strtoupper(ReputationDisplay::relationLabel($displayTotal)),
                 'relation_class' => $relationClass,
                 'relation_tooltip' => ReputationDisplay::relationTooltipByClass($relationClass),
-                'show_quest_footnote' => $total >= 70,
+                'show_quest_footnote' => $displayTotal >= 70,
+                'show_cap_footnote' => ReputationDisplay::showFactionCapFootnote($rawTotal),
             ];
         }
 

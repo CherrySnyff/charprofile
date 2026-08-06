@@ -35,6 +35,46 @@ class ReputationDisplay
     }
 
     /**
+     * Включено ли ACP-ограничение отображения фракций в диапазоне [−100; 100].
+     */
+    public static function isFactionLimitEnabled(): bool
+    {
+        return (bool)(int)(\XF::options()->charProfileRepLimit ?? 0);
+    }
+
+    /**
+     * Отображаемая сумма фракции: при лимите — clamp в [−100; 100], в БД/журнале значение не режется.
+     */
+    public static function displayFactionTotal(int $rawTotal): int
+    {
+        if (!self::isFactionLimitEnabled()) {
+            return $rawTotal;
+        }
+
+        if ($rawTotal > 100) {
+            return 100;
+        }
+        if ($rawTotal < -100) {
+            return -100;
+        }
+
+        return $rawTotal;
+    }
+
+    /**
+     * Показать сноску «достигнут максимум», если лимит включён и сырая сумма вышла за ±100
+     * либо уже ровно на границе отображения при |raw| ≥ 100.
+     */
+    public static function showFactionCapFootnote(int $rawTotal): bool
+    {
+        if (!self::isFactionLimitEnabled()) {
+            return false;
+        }
+
+        return $rawTotal >= 100 || $rawTotal <= -100;
+    }
+
+    /**
      * Репутация / UI: CSS-класс отношения по сумме (despised…legend).
      */
     public static function relationClass(int $sum): string

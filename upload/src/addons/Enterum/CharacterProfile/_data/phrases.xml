@@ -11,6 +11,9 @@
   <phrase title="option.charProfileItemsPerPage" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Записей на странице]]></phrase>
   <phrase title="option.charProfileRepSubtractNegative" version_id="1000089" version_string="1.0.19"><![CDATA[Отнимать отрицательную репутацию от общей]]></phrase>
   <phrase title="option_explain.charProfileRepSubtractNegative" version_id="1000091" version_string="1.0.21"><![CDATA[Влияет на суммы фракций (и класс отношения). Если включено: общая фракции = положительная − |отрицательная|. Если выключено: общая = положительная + отрицательная (со знаком). Таблица влияния по биомам всегда: |отрицательная| + положительная.]]></phrase>
+  <phrase title="option.charProfileRepLimit" version_id="1000093" version_string="1.0.23"><![CDATA[Ограничение репутации]]></phrase>
+  <phrase title="option_explain.charProfileRepLimit" version_id="1000093" version_string="1.0.23"><![CDATA[Если включено, у каждой фракции на экране показывается не больше +100 и не меньше −100. В журнале репутация продолжает складываться без обрезки. При ±100 рядом с суммой — сноска с пояснением. После сохранения опции обновляется метка профилей, UI сразу использует новый режим.]]></phrase>
+  <phrase title="enterum_char_profile_rep_cap_footnote" version_id="1000093" version_string="1.0.23"><![CDATA[Достигнут максимум репутации с данной фракцией]]></phrase>
   <phrase title="permission_interface.charProfile_general" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: общие права]]></phrase>
   <phrase title="permission_interface.charProfile_management" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Профиль игрока: управление]]></phrase>
   <phrase title="permission.character_profile_view" version_id="1" version_string="0.0.1 Alpha"><![CDATA[Просмотр вкладок профиля игрока]]></phrase>

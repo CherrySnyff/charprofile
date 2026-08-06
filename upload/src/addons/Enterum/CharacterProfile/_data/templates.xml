@@ -154,12 +154,12 @@
 	<xf:include template="enterum_char_profile_nav_links_js" />
 </xf:if>]]></template>
 
-  <template type="public" title="enterum_char_profile_account_menu_links" version_id="1000088" version_string="1.0.18"><![CDATA[<xf:if is="$xf.visitor.user_id && $xf.visitor.canViewCharacterProfileTabs()">
+  <template type="public" title="enterum_char_profile_account_menu_links" version_id="1000097" version_string="1.0.27"><![CDATA[<xf:if is="$xf.visitor.user_id && $xf.visitor.canViewCharacterProfileTabs()">
 	<li><a href="{{ link('members/reputation', $xf.visitor) }}" class="menu-linkRow" data-cp-profile-link="reputation">{{ phrase('enterum_char_profile_tab_reputation') }}</a></li>
 	<li><a href="{{ link('members/backpack', $xf.visitor) }}" class="menu-linkRow" data-cp-profile-link="backpack">{{ phrase('enterum_char_profile_tab_backpack') }}</a></li>
 </xf:if>]]></template>
 
-  <template type="public" title="enterum_char_profile_account_menu_fallback" version_id="1000088" version_string="1.0.18"><![CDATA[<xf:if is="$xf.visitor.user_id && $xf.visitor.canViewCharacterProfileTabs()">
+  <template type="public" title="enterum_char_profile_account_menu_fallback" version_id="1000097" version_string="1.0.27"><![CDATA[<xf:if is="$xf.visitor.user_id && $xf.visitor.canViewCharacterProfileTabs()">
 	<span class="cp-nav-link-seed" hidden="hidden"
 		data-cp-mode="account-menu"
 		data-rep-url="{{ link('members/reputation', $xf.visitor) }}"
@@ -171,7 +171,7 @@
 	<xf:include template="enterum_char_profile_nav_links_js" />
 </xf:if>]]></template>
 
-  <template type="public" title="enterum_char_profile_nav_links_js" version_id="1000088" version_string="1.0.18"><![CDATA[<script>
+  <template type="public" title="enterum_char_profile_nav_links_js" version_id="1000097" version_string="1.0.27"><![CDATA[<script>
 (function () {
 	if (window.__cpNavLinksInit) {
 		window.__cpNavLinksRun && window.__cpNavLinksRun();
@@ -209,18 +209,20 @@
 
 		function addBtn(key, href, title) {
 			if (!href || !title) return;
-			if (group.querySelector('a[data-cp-profile-link="' + key + '"]')) return;
-			var a = document.createElement('a');
-			a.href = href;
-			a.className = 'button button--link';
+			var a = group.querySelector('a[data-cp-profile-link="' + key + '"]');
+			if (!a) {
+				a = document.createElement('a');
+				a.className = 'button button--link';
+				if (after && after.parentNode === group) {
+					group.insertBefore(a, insertRef);
+					insertRef = a.nextSibling;
+				} else {
+					group.appendChild(a);
+				}
+			}
+			a.setAttribute('href', href);
 			a.setAttribute('data-cp-profile-link', key);
 			a.textContent = title;
-			if (after && after.parentNode === group) {
-				group.insertBefore(a, insertRef);
-				insertRef = a.nextSibling;
-			} else {
-				group.appendChild(a);
-			}
 		}
 
 		addBtn('reputation', seed.getAttribute('data-rep-url'), seed.getAttribute('data-rep-title'));
@@ -228,90 +230,171 @@
 		return true;
 	}
 
-	function ensureAccountMenuItems(seed) {
-		if (document.querySelector('.menu-linkRow[data-cp-profile-link="reputation"]')) {
-			return true;
+	function findAccountMenus() {
+		var menus = [];
+		var seen = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+		function add(node) {
+			if (!node) return;
+			if (seen) {
+				if (seen.has(node)) return;
+				seen.add(node);
+			} else if (menus.indexOf(node) !== -1) {
+				return;
+			}
+			menus.push(node);
 		}
+		document.querySelectorAll('.menu--account .menu-content, .offCanvasMenu--account .offCanvasMenu-content, .offCanvasMenu--account').forEach(add);
+		return menus;
+	}
 
-		var scope = seed.closest('.menu-content')
-			|| seed.closest('[data-menu-content]')
-			|| document.querySelector('.menu--account .menu-content, .p-navgroup-link--user .menu-content, .offCanvasMenu--account')
-			|| document;
+	function isAlreadyPlaced(li, afterLi, beforeLi, list) {
+		if (!li || li.parentNode !== list) return false;
+		if (afterLi && afterLi.parentNode === list) {
+			return li.previousElementSibling === afterLi;
+		}
+		if (beforeLi && beforeLi.parentNode === list) {
+			return li.nextElementSibling === beforeLi || (li.nextElementSibling && li.nextElementSibling.querySelector && li.nextElementSibling.querySelector('a[data-cp-profile-link]'));
+		}
+		return true;
+	}
+
+	function injectIntoMenu(scope, seed) {
+		if (!scope) return false;
+
+		var repUrl = seed.getAttribute('data-rep-url') || '';
+		var bpUrl = seed.getAttribute('data-bp-url') || '';
+		var repTitle = seed.getAttribute('data-rep-title') || 'Репутация';
+		var bpTitle = seed.getAttribute('data-bp-title') || 'Рюкзак';
+		if (!repUrl || !bpUrl) return false;
 
 		var afterTitle = seed.getAttribute('data-after-title') || 'Лист персонажа';
 		var beforeTitle = seed.getAttribute('data-before-title') || 'Новостная лента';
 		var afterLink = findAnchorByText(scope, afterTitle);
 		var beforeLink = findAnchorByText(scope, beforeTitle);
 
-		// Ищем первую колонку ссылок (где Анкета / Лист / Новостная лента).
 		var list = null;
 		if (afterLink) list = afterLink.closest('ul');
 		if (!list && beforeLink) list = beforeLink.closest('ul');
 		if (!list) {
-			var lists = scope.querySelectorAll('ul.listColumns, ul.listPlain.listColumns');
+			var existing = scope.querySelector('a[data-cp-profile-link="reputation"]');
+			if (existing) list = existing.closest('ul');
+		}
+		if (!list) {
+			var lists = scope.querySelectorAll('ul.listColumns, ul.listPlain.listColumns, ul.listPlain');
 			list = lists.length ? lists[0] : null;
 		}
 		if (!list) return false;
 
 		var afterLi = afterLink ? afterLink.closest('li') : null;
 		var beforeLi = beforeLink ? beforeLink.closest('li') : null;
-		var insertRef = null;
-		if (afterLi && afterLi.parentNode === list) {
-			insertRef = afterLi.nextSibling;
-		} else if (beforeLi && beforeLi.parentNode === list) {
-			insertRef = beforeLi;
+
+		function ensureLi(key, href, title) {
+			var a = scope.querySelector('a[data-cp-profile-link="' + key + '"]');
+			var li = a ? a.closest('li') : null;
+			if (!li) {
+				li = document.createElement('li');
+				a = document.createElement('a');
+				a.className = 'menu-linkRow';
+				li.appendChild(a);
+			} else if (!a) {
+				a = li.querySelector('a');
+			}
+			if (!a) return null;
+			a.setAttribute('href', href);
+			a.setAttribute('data-cp-profile-link', key);
+			a.className = (a.className && a.className.indexOf('menu-linkRow') !== -1) ? a.className : 'menu-linkRow';
+			if (textOf(a) !== title) a.textContent = title;
+			return li;
 		}
 
-		function addItem(key, href, title) {
-			if (!href || !title) return;
-			if (list.querySelector('a[data-cp-profile-link="' + key + '"]')) return;
-			if (findAnchorByText(list, title)) return;
-			var li = document.createElement('li');
-			var a = document.createElement('a');
-			a.href = href;
-			a.className = 'menu-linkRow';
-			a.setAttribute('data-cp-profile-link', key);
-			a.textContent = title;
-			li.appendChild(a);
-			if (insertRef && insertRef.parentNode === list) {
-				list.insertBefore(li, insertRef);
-				insertRef = li.nextSibling;
-			} else {
-				list.appendChild(li);
+		var repLi = ensureLi('reputation', repUrl, repTitle);
+		var bpLi = ensureLi('backpack', bpUrl, bpTitle);
+		if (!repLi || !bpLi) return false;
+
+		// Не трогаем DOM, если порядок уже верный — иначе клик по ссылке срывается.
+		var repOk = isAlreadyPlaced(repLi, afterLi, beforeLi, list);
+		var bpOk = bpLi.previousElementSibling === repLi && bpLi.parentNode === list;
+		if (repOk && bpOk) {
+			return true;
+		}
+
+		if (afterLi && afterLi.parentNode === list) {
+			if (repLi.previousElementSibling !== afterLi) {
+				list.insertBefore(repLi, afterLi.nextSibling);
+			}
+			if (bpLi.previousElementSibling !== repLi) {
+				list.insertBefore(bpLi, repLi.nextSibling);
+			}
+		} else if (beforeLi && beforeLi.parentNode === list) {
+			if (bpLi.nextElementSibling !== beforeLi && repLi.nextElementSibling !== beforeLi) {
+				list.insertBefore(repLi, beforeLi);
+				list.insertBefore(bpLi, beforeLi);
+			}
+		} else {
+			if (repLi.parentNode !== list) list.appendChild(repLi);
+			if (bpLi.parentNode !== list) list.appendChild(bpLi);
+			if (bpLi.previousElementSibling !== repLi) {
+				list.insertBefore(bpLi, repLi.nextSibling);
 			}
 		}
-
-		addItem('reputation', seed.getAttribute('data-rep-url'), seed.getAttribute('data-rep-title'));
-		addItem('backpack', seed.getAttribute('data-bp-url'), seed.getAttribute('data-bp-title'));
 		return true;
+	}
+
+	function ensureAccountMenuItems(seed) {
+		var menus = findAccountMenus();
+		var ok = false;
+		for (var i = 0; i < menus.length; i++) {
+			if (injectIntoMenu(menus[i], seed)) ok = true;
+		}
+		return ok;
 	}
 
 	function injectSeed(seed) {
 		if (!seed) return;
 		var mode = seed.getAttribute('data-cp-mode') || '';
-		var ok = false;
 		if (mode === 'tooltip') {
-			ok = ensureTooltipButtons(seed);
+			ensureTooltipButtons(seed);
 		} else if (mode === 'account-menu') {
-			ok = ensureAccountMenuItems(seed);
-		}
-		if (ok) {
-			seed.setAttribute('data-cp-done', '1');
+			ensureAccountMenuItems(seed);
 		}
 	}
 
+	var running = false;
 	function run() {
-		document.querySelectorAll('.cp-nav-link-seed').forEach(injectSeed);
+		if (running) return;
+		running = true;
+		try {
+			document.querySelectorAll('.cp-nav-link-seed').forEach(injectSeed);
+		} finally {
+			running = false;
+		}
 	}
 
 	window.__cpNavLinksRun = run;
 	run();
-	document.addEventListener('DOMContentLoaded', run);
-	document.addEventListener('click', function () {
-		window.setTimeout(run, 50);
+	document.addEventListener('DOMContentLoaded', function () {
+		window.setTimeout(run, 0);
+		window.setTimeout(run, 100);
+	});
+
+	// Клик по нашим ссылкам — всегда переход, без перестройки DOM.
+	document.addEventListener('click', function (e) {
+		var t = e.target;
+		if (!t || !t.closest) return;
+		var a = t.closest('a[data-cp-profile-link="reputation"], a[data-cp-profile-link="backpack"]');
+		if (!a) return;
+		var href = a.getAttribute('href') || '';
+		if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
+		e.preventDefault();
+		e.stopPropagation();
+		window.location.assign(href);
 	}, true);
+
 	if (window.XF && XF.on) {
-		try { XF.on(document, 'menu:click', function () { window.setTimeout(run, 30); }); } catch (e) {}
+		try {
+			XF.on(document, 'menu:opened', function () { window.setTimeout(run, 0); });
+			XF.on(document, 'menu:click', function () { window.setTimeout(run, 50); });
+		} catch (err) {}
 	}
 })();
 </script>]]></template>
@@ -324,7 +407,7 @@
 	</h2>
 </xf:if>]]></template>
 
-  <template type="public" title="enterum_char_profile_reputation" version_id="1000086" version_string="1.0.16"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
+  <template type="public" title="enterum_char_profile_reputation" version_id="1000093" version_string="1.0.23"><![CDATA[<xf:title>{{ phrase('enterum_char_profile_tab_reputation') }} - {$user.username}</xf:title>
 
 <xf:css src="enterum_char_profile.less" />
 
@@ -457,7 +540,9 @@
 								<details class="cp-rep-faction-spoiler<xf:if is="$fr.total < 0"> cp-rep-faction-spoiler--negative</xf:if>">
 									<summary>
 										<span class="cp-rep-faction-name">{$fr.display_name}</span>
-										<span class="cp-rep-faction-total">{$fr.total|number}</span>
+										<span class="cp-rep-faction-total">
+											{$fr.total|number}<xf:if is="$fr.show_cap_footnote"><span class="cp-rep-capFootnote" data-cp-tooltip="{{ phrase('enterum_char_profile_rep_cap_footnote') }}" title="{{ phrase('enterum_char_profile_rep_cap_footnote') }}">*</span></xf:if>
+										</span>
 										<span class="cp-rep-faction-relation">
 											<span class="cp-relation-pill cp-relation-pill--{$fr.relation_class}" data-cp-tooltip="{$fr.relation_tooltip}">{$fr.relation}</span>
 											<xf:if is="$fr.show_quest_footnote">
@@ -1203,7 +1288,7 @@
 }
 ]]></template>
 
-  <template type="public" title="enterum_char_profile.less" version_id="1000079" version_string="1.0.9"><![CDATA[.cp-tabs,
+  <template type="public" title="enterum_char_profile.less" version_id="1000093" version_string="1.0.23"><![CDATA[.cp-tabs,
 .cp-subTabs {
 	margin-bottom: 12px;
 }
@@ -1633,7 +1718,8 @@
 	color: rgb(245, 0, 0);
 }
 
-.cp-rep-questFootnote {
+.cp-rep-questFootnote,
+.cp-rep-capFootnote {
 	margin-left: 4px;
 	color: @xf-textColorMuted;
 	cursor: help;

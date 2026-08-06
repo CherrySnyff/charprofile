@@ -11,6 +11,7 @@
 namespace Enterum\CharacterProfile\Admin\Controller;
 
 use Enterum\CharacterProfile\Helper\ActionLogDisplay;
+use Enterum\CharacterProfile\Helper\ActionLogSchema;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
 use XF\Mvc\Reply\AbstractReply;
@@ -39,8 +40,9 @@ class Logs extends AbstractController
      */
     public function actionIndex(): AbstractReply
     {
-        // Таблицу создаёт только Setup — здесь только проверка наличия.
-        $hasActionLogTable = $this->hasActionLogTable();
+        // Самовосстановление: таблица могла не появиться, если upgrade-шаг не отработал.
+        ActionLogSchema::ensureTable($this->app);
+        $hasActionLogTable = ActionLogSchema::tableExists($this->app);
 
         $page = max(1, (int)$this->filter('page', 'uint'));
         $perPage = max(10, min(200, (int)$this->options()->charProfileItemsPerPage ?: 50));
@@ -150,7 +152,7 @@ class Logs extends AbstractController
             'contentTypeTabs' => ActionLogDisplay::getContentTypeTabsForView(),
             'actionOptions' => ActionLogDisplay::getActionOptionsForView(),
             'hasActionLogTable' => $hasActionLogTable,
-            'loggingEnabled' => (bool)$this->options()->charProfileEnableActionLog,
+            'loggingEnabled' => (bool)(int)$this->options()->charProfileEnableActionLog,
         ]);
     }
 
@@ -162,7 +164,7 @@ class Logs extends AbstractController
         $this->assertPostOnly();
         $this->assertValidCsrfToken($this->filter('_xfToken', 'str'));
 
-        if (!$this->hasActionLogTable()) {
+        if (!ActionLogSchema::tableExists($this->app)) {
             return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
         }
 
@@ -198,7 +200,7 @@ class Logs extends AbstractController
         $this->assertPostOnly();
         $this->assertValidCsrfToken($this->filter('_xfToken', 'str'));
 
-        if (!$this->hasActionLogTable()) {
+        if (!ActionLogSchema::tableExists($this->app)) {
             return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
         }
 
@@ -218,7 +220,7 @@ class Logs extends AbstractController
      */
     public function actionExport(): AbstractReply
     {
-        if (!$this->hasActionLogTable()) {
+        if (!ActionLogSchema::tableExists($this->app)) {
             return $this->error(\XF::phrase('enterum_char_profile_log_table_missing'));
         }
 
@@ -365,14 +367,10 @@ class Logs extends AbstractController
     }
 
     /**
-     * ACP logs: есть ли таблица xf_char_profile_action_log (без DDL — создание только в Setup).
+     * ACP logs: есть ли таблица xf_char_profile_action_log.
      */
     protected function hasActionLogTable(): bool
     {
-        try {
-            return $this->app->schemaManager()->tableExists('xf_char_profile_action_log');
-        } catch (\Throwable $e) {
-            return false;
-        }
+        return ActionLogSchema::tableExists($this->app);
     }
 }

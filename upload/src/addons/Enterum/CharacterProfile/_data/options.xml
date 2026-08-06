@@ -20,4 +20,8 @@
     <default_value>1</default_value>
     <relation group_id="enterum_char_profile" display_order="50"/>
   </option>
+  <option option_id="charProfileRepLimit" edit_format="onoff" data_type="boolean" validation_class="Enterum\CharacterProfile\Option\ReputationLimit" validation_method="verifyOption" advanced="0">
+    <default_value>0</default_value>
+    <relation group_id="enterum_char_profile" display_order="60"/>
+  </option>
 </options>
