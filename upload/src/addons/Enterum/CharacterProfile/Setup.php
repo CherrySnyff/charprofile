@@ -9,6 +9,7 @@
 
 namespace Enterum\CharacterProfile;
 
+use Enterum\CharacterProfile\Helper\ActionLogSchema;
 use Enterum\CharacterProfile\Helper\BackpackOtherSchema;
 use Enterum\CharacterProfile\Service\ProfileInitializer;
 use XF\AddOn\AbstractSetup;
@@ -225,6 +226,48 @@ class Setup extends AbstractSetup
     public function upgrade1000092Step1(): void
     {
         // Правки только в PHP (без DDL): CSRF ACP, отказ от runtime ALTER/CREATE, read-only live ОГ.
+    }
+
+    /**
+     * Upgrade 1.0.23: опция «Ограничение репутации» (±100 на отображении фракций).
+     */
+    public function upgrade1000093Step1(): void
+    {
+        // Опция из options.xml; отображение live. Метка профилей обновляется при сохранении опции.
+    }
+
+    /**
+     * Upgrade 1.0.24: гарантировать таблицы (в т.ч. xf_char_profile_action_log после отказа от runtime CREATE).
+     */
+    public function upgrade1000094Step1(): void
+    {
+        $this->doCreateTables($this->getTables());
+        ActionLogSchema::ensureTable($this->app());
+    }
+
+    /**
+     * Upgrade 1.0.25: повторно создать журнал действий (если 1.0.24 не отработал на проде).
+     */
+    public function upgrade1000095Step1(): void
+    {
+        $this->doCreateTables($this->getTables());
+        ActionLogSchema::ensureTable($this->app());
+    }
+
+    /**
+     * Upgrade 1.0.26: фикс URL Репутация/Рюкзак в меню аккаунта (явный user_id).
+     */
+    public function upgrade1000096Step1(): void
+    {
+        // Только шаблоны/JS; данные не меняются.
+    }
+
+    /**
+     * Upgrade 1.0.27: клик по Репутация/Рюкзак в visitor menu больше не срывается JS.
+     */
+    public function upgrade1000097Step1(): void
+    {
+        // Только шаблоны/JS.
     }
 
     protected function syncAcceptedUserProfileLinks(): void

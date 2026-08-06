@@ -42,8 +42,8 @@
     <replace><![CDATA[<xf:include template="enterum_char_profile_tooltip_links" />
 			<div class="memberTooltip-actions">]]></replace>
   </modification>
-  <modification type="public" template="account_visitor_menu" modification_key="enterum_cp_account_menu_links" description="Reputation/backpack links before news feed in visitor menu" execution_order="50" enabled="1" action="preg_replace">
-    <find><![CDATA[/(<li>\s*<a[^>]*href="\{\{\s*link\('whats-new\/news-feed'\)[^"]*"\}\}"[^>]*>)/s]]></find>
+  <modification type="public" template="account_visitor_menu" modification_key="enterum_cp_account_menu_links" description="Reputation/backpack after character sheet / before news feed in visitor menu" execution_order="80" enabled="1" action="preg_replace">
+    <find><![CDATA[/(<li>\s*<a\s+href="\{\{\s*link\('whats-new\/news-feed'\)\s*\}\}"[^>]*>)/s]]></find>
     <replace><![CDATA[<xf:include template="enterum_char_profile_account_menu_links" />
 				$1]]></replace>
   </modification>
